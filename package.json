@@ -1,0 +1,27 @@
+{
+  "name": "weave-db",
+  "description": "<img src=\"Logo.png\" width=\"400\">",
+  "scripts": {
+    "setup": "npm install && lerna bootstrap",
+    "link": "lerna link --force-local",
+    "test": "lerna run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fachw3rk/weave.git"
+  },
+  "author": {
+    "name": "Kevin Ries",
+    "company": "Fachwerk Software",
+    "email": "kevin.ries@fachwerk.io",
+    "url": "https://weave.fachwerk.io"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fachw3rk/weave-db/issues"
+  },
+  "homepage": "https://github.com/fachw3rk/weave#readme",
+  "devDependencies": {
+    "lerna": "^3.10.7"
+  }
+}

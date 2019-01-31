@@ -1,0 +1,41 @@
+{
+  "name": "@weave-js/db",
+  "version": "0.0.29",
+  "description": "weave-db service",
+  "main": "lib/index.js",
+  "scripts": {
+    "ci": "jest --watch",
+    "test": "jest --no-cache"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Kevin Ries",
+    "company": "Fachwerk Software",
+    "email": "kevin.ries@fachwerk.io",
+    "url": "https://weave.fachwerk.io"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "fachwork": "0.0.10",
+    "nedb-core": "^3.0.6",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "@weave-js/core": "^0.5.33",
+    "eslint-config-fw": "^1.0.3",
+    "eslint-loader": "^2.1.1",
+    "eslint": "^5.12.1",
+    "istanbul": "^0.4.5",
+    "jest": "^24.0.0"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "rootDir": "./lib",
+    "roots": [
+      "../test/integration"
+    ]
+  },
+  "gitHead": "cdd9762d78d076dc7bdfa0784cdc9ce6af6a57c3"
+}

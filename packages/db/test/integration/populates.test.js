@@ -1,0 +1,85 @@
+const { Weave } = require('@weave-js/core')
+const DbService = require('../../lib/index')
+
+const threads = [
+    { title: 'How to use weave?', content: 'Hello World', clicks: 2 },
+    { title: 'I love weave!', content: 'Weave documentation file', clicks: 3243423123 },
+    { title: 'Microservices rules!', content: 'Weave documentation file', clicks: 12345 }
+
+]
+
+const users = [
+    { username: 'maxi123', firstname: 'Max', lastname: 'Mustermann', password: 'sadakjhfewiugfashdasd' },
+    { username: 'Methias', firstname: 'Walter', lastname: 'White', password: '30983124923490234u23490' },
+    { username: 'Pinkman124', firstname: 'John', lastname: 'Wayne', password: 'gfdsgs4gdfgsdfhsgh' }
+
+]
+
+const equalAtLeast = (obj, origin) => {
+    Object.keys(origin).map(key => {
+        expect(origin[key]).toEqual(obj[key])
+    })
+}
+
+describe('db-service populates test', () => {
+    const broker = Weave({
+        logLevel: 'error'
+    })
+
+    broker.createService({
+        name: 'thread',
+        mixins: DbService(),
+        model: {
+            name: 'threads'
+        },
+        settings: {
+            fields: ['_id', 'title', 'content', 'clicks', 'author'],
+            populates: {
+                author: 'user.get'
+            }
+        }
+    })
+
+    broker.createService({
+        name: 'user',
+        mixins: DbService(),
+        model: {
+            name: 'users'
+        },
+        settings: {
+            fields: ['_id', 'username', 'firstname', 'lastname']
+        }
+    })
+    beforeAll(() => {
+        return broker.start().then(() => {
+            return broker.call('user.insertMany', { entities: users }).then(results => {
+                results.forEach((user, i) => (users[i]._id = user._id))
+
+                threads[0].author = users[1]._id
+                threads[1].author = users[0]._id
+                threads[2].author = users[2]._id
+
+                return broker.call('thread.insertMany', { entities: threads }).then(results => {
+                    results.forEach((thread, i) => (threads[i]._id = thread._id))
+                })
+            })
+        })
+    })
+
+    afterAll(() => broker.stop())
+
+    it('should get the number of docs', () => {
+        return broker.call('thread.count')
+            .then(results => {
+                expect(results).toBe(3)
+            })
+    })
+
+    it.only('should get the populated doc', () => {
+        return broker.call('thread.get', { id: threads[1]._id, populate: ['author'] })
+            .then(result => {
+                expect(result).toBeDefined()
+                equalAtLeast(users[0], result.author)
+            })
+    })
+})

@@ -1,0 +1,30 @@
+{
+  "name": "@weave-js/db-mongodb",
+  "version": "0.0.10",
+  "description": "MongoDb native adapter for weave db mixin.",
+  "main": "lib/index.js",
+  "scripts": {},
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Kevin Ries",
+    "company": "Fachwerk Software",
+    "email": "kevin.ries@fachwerk.io",
+    "url": "https://weave.fachwerk.io"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@weave-js/core": "^0.5.33",
+    "eslint-config-fw": "^1.0.3",
+    "eslint-loader": "^2.1.1",
+    "eslint": "^5.12.1",
+    "istanbul": "^0.4.5",
+    "jest": "^24.0.0"
+  },
+  "dependencies": {
+    "lodash": "^4.17.11",
+    "mongodb": "^3.1.13"
+  },
+  "gitHead": "157d0239e764a8138d7cdce28793f39859d2a353"
+}
