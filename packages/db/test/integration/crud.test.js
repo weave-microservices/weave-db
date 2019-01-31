@@ -76,7 +76,7 @@ describe('db-service CRUD methods', () => {
     it('should return the number of docs.', () => {
         return broker.call('test.count')
             .then(result => {
-                expect(result).toBe(3)
+                expect(result).toBe(4)
             })
     })
 
