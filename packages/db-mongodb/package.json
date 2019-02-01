@@ -1,6 +1,6 @@
 {
   "name": "@weave-js/db-mongodb",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "MongoDb native adapter for weave db mixin.",
   "main": "lib/index.js",
   "scripts": {},
@@ -16,9 +16,9 @@
   "license": "MIT",
   "devDependencies": {
     "@weave-js/core": "^0.5.33",
+    "eslint": "^5.12.1",
     "eslint-config-fw": "^1.0.3",
     "eslint-loader": "^2.1.1",
-    "eslint": "^5.12.1",
     "istanbul": "^0.4.5",
     "jest": "^24.0.0"
   },
