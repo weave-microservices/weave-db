@@ -49,6 +49,7 @@ function MongoDbAdapter (options) {
         },
         connect () {
             return MongoClient.connect(options.url, options.options).then(client => {
+                this.client = client
                 this.db = this.$service.db = client.db ? client.db(options.database) : client
                 this.collection = this.$service.db.collection(this.$collectionName)
 
@@ -58,7 +59,7 @@ function MongoDbAdapter (options) {
         },
         disconnect () {
             return new Promise((resolve, reject) => {
-                this.db.close((error) => {
+                this.client.close((error) => {
                     if (error) return reject(error)
                     return resolve()
                 })
