@@ -354,7 +354,7 @@ module.exports = () => {
                     }
 
                     if (rule.handler) {
-                        let ruleResult = rule.handler.call(this, context, docs)
+                        let ruleResult = rule.handler.call(this, context, arr, idList, rule)
                         if (isFunction(rule.transformation)) {
                             ruleResult = ruleResult.then(rule.transformation)
                         }
