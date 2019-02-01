@@ -6,8 +6,8 @@ const { DocumentNotFoundError } = require('../../lib/errors')
 const docs = [
     { name: 'Testfile.txt', content: 'Hello World', size: 2 },
     { name: 'Weave_doc.pdf', content: 'Weave documentation file', size: 220 },
-    { name: 'WeaveLogo.jpeg', content: null, size: 220 },
-    { name: 'Blabla.pdf', content: 'Blabla', size: 220 }
+    { name: 'WeaveLogo.jpeg', content: null, size: 344 },
+    { name: 'Blabla.pdf', content: 'Blabla', size: 566 }
 ]
 
 const equalAtLeast = (obj, origin) => {
@@ -76,7 +76,7 @@ describe('db-service CRUD methods', () => {
     it('should return the number of docs.', () => {
         return broker.call('test.count')
             .then(result => {
-                expect(result).toBe(4)
+                expect(result).toBeGreaterThanOrEqual(4)
             })
     })
 
@@ -94,6 +94,15 @@ describe('db-service CRUD methods', () => {
             })
     })
 
+    it('should return multiple docs by ID.', () => {
+        return broker.call('test.get', { id: [docs[0]._id, docs[2]._id] })
+            .then(results => {
+                expect(results.length).toBe(2)
+                equalAtLeast(results[0], docs[0])
+                equalAtLeast(results[1], docs[2])
+            })
+    })
+
     it('should throw an error if a document does not exist.', () => {
         return broker.call('test.get', { id: 99999999999 })
             .catch(error => {
@@ -101,8 +110,23 @@ describe('db-service CRUD methods', () => {
             })
     })
 
-    it('should throw an error if a document does not exist.', () => {
-        return broker.call('test.get', { id: 99999999999 })
+    it('should find docs by query.', () => {
+        return broker.call('test.find', { query: { _id: docs[1]._id }})
+            .then(results => {
+                expect(results.length).toBe(1)
+                equalAtLeast(results[0], docs[1])
+            })
+            .catch(error => {
+                expect(error).toBeInstanceOf(DocumentNotFoundError)
+            })
+    })
+
+    it('should update a doc.', () => {
+        return broker.call('test.find', { query: { _id: docs[1]._id }})
+            .then(results => {
+                expect(results.length).toBe(1)
+                equalAtLeast(results[0], docs[1])
+            })
             .catch(error => {
                 expect(error).toBeInstanceOf(DocumentNotFoundError)
             })

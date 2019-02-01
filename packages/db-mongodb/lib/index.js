@@ -28,6 +28,13 @@ function MongoDbAdapter (options) {
         return value
     }
 
+    function objectIDToString (objectId) {
+        if (objectId && objectId.toHexString) {
+            return objectId.toHexString()
+        }
+        return objectId
+    }
+
     return {
         init (broker, service) {
             if (!service.schema.collectionName) {
@@ -36,7 +43,7 @@ function MongoDbAdapter (options) {
 
             this.$service = service
             this.$collectionName = service.schema.collectionName
-            this.$idField = service.schema.settings.idField || '_id'
+            this.$idField = service.schema.settings.idFieldName || '_id'
 
             this.log = broker.getLogger('MONGODB')
         },
@@ -65,8 +72,8 @@ function MongoDbAdapter (options) {
         },
         insert (entity) {
             return Promise.resolve(entity)
-                    .then(ent => transform(ent))
-                    .then(entity => this.collection.insertOne(entity))
+                .then(ent => transform(ent))
+                .then(entity => this.collection.insertOne(entity))
         },
         findOne (query) {
             return this.collection.findOne(query)
@@ -118,7 +125,6 @@ function MongoDbAdapter (options) {
                         return reject(error)
                     })
                 }
-               
             })
         },
         updateById (id, entity) {
@@ -130,8 +136,12 @@ function MongoDbAdapter (options) {
             return this.collection
                 .remove({ [this.$idField]: stringToObjectID(id) })
         },
-        close () {
-            return this.db.close()
+        modelToObject (model) {
+            const data = Object.assign({}, model)
+            if (data._id) {
+                data._id = objectIDToString(model._id)
+            }
+            return data
         }
     }
 }

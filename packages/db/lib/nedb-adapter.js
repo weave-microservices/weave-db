@@ -1,17 +1,12 @@
+/*
+ * Author: Kevin Ries (kevin@fachw3rk.de)
+ * -----
+ * Copyright 2019 Fachwerk
+ */
+
 const NeDB = require('nedb-core')
 
-function WeaveDbAdapter (options) {
-    let db
-
-    function validateMode (model) {
-        if (typeof model === 'string') {
-            return true
-        }
-        if (typeof model === 'object') {
-            if (!model.name) throw new Error('Model needs a name!')
-        }
-    }
-
+function WeaveDbAdapter (options = {}) {
     return {
         init (broker, service) {
             if (!service.schema.model) {
@@ -39,7 +34,6 @@ function WeaveDbAdapter (options) {
         },
         count (filterParams) {
             const query = filterParams.query || {}
-            console.log(query)
             return new Promise((resolve, reject) => {
                 this.db.count(query, (error, count) => {
                     if (error) {
@@ -113,10 +107,13 @@ function WeaveDbAdapter (options) {
             })
         },
         updateById (id, entity) {
-            return this.db.get(model).find({ id }).assign(entity).write()
+            return this.db.find({ id }).assign(entity).write()
         },
         removeById (id) {
-            return this.db.get(model).remove({ id }).write()
+            return this.db.remove({ id }).write()
+        },
+        modelToObject (doc) {
+            return doc
         }
     }
 }

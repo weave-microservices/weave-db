@@ -1,3 +1,9 @@
+/*
+ * Author: Kevin Ries (kevin@fachw3rk.de)
+ * -----
+ * Copyright 2019 Fachwerk
+ */
+
 const { isFunction, isObject } = require('lodash')
 const { promisify } = require('fachwork')
 const NeDbAdapter = require('./nedb-adapter')
@@ -244,19 +250,36 @@ module.exports = () => {
                 return this.adapter.disconnect()
             },
             sanitizeParams (context, params) {
-                const p = Object.assign({}, params)
+                const sanitizeParams = Object.assign({}, params)
+
+                if (typeof sanitizeParams.limit === 'string') {
+                    sanitizeParams.limit = Number(sanitizeParams.limit)
+                }
+                if (typeof sanitizeParams.offset === 'string') {
+                    sanitizeParams.offset = Number(sanitizeParams.offset)
+                }
+                if (typeof sanitizeParams.page === 'string') {
+                    sanitizeParams.page = Number(sanitizeParams.page)
+                }
+                if (typeof sanitizeParams.pageSize === 'string') {
+                    sanitizeParams.pageSize = Number(sanitizeParams.pageSize)
+                }
+                if (typeof sanitizeParams.populate === 'string') {
+                    sanitizeParams.populate = sanitizeParams.populate.split(' ')
+                }
+
                 if (context.action.name.endsWith('.list')) {
-                    if (!p.page) {
-                        p.page = 1
+                    if (!sanitizeParams.page) {
+                        sanitizeParams.page = 1
                     }
 
-                    if (!p.pageSize) {
-                        p.pageSize = this.settings.pageSize
+                    if (!sanitizeParams.pageSize) {
+                        sanitizeParams.pageSize = this.settings.pageSize
                     }
-                    p.limit = p.pageSize
-                    p.offset = (p.page - 1) * p.pageSize
+                    sanitizeParams.limit = sanitizeParams.pageSize
+                    sanitizeParams.offset = (sanitizeParams.page - 1) * sanitizeParams.pageSize
                 }
-                return p
+                return sanitizeParams
             },
             model (context, params) { // by ids
                 return Promise.resolve(params)
@@ -279,6 +302,7 @@ module.exports = () => {
                     }
                 }
                 return Promise.resolve(docs)
+                    .then(docs => docs.map(doc => this.adapter.modelToObject(doc)))
                     .then(json => params.populate ? this.populateDocs(context, json, params.populate) : json)
                     .then(json => this.filterFields(json, params.fields ? params.fields : this.settings.fields))
                     .then(json => isDoc ? json[0] : json)
@@ -397,6 +421,7 @@ module.exports = () => {
             } else {
                 this.adapter = NeDbAdapter()
             }
+
             this.adapter.init(this.broker, this)
             this.log.debug(`Weave db initialized for service ${this.name}`)
 
@@ -414,7 +439,7 @@ module.exports = () => {
         started () {
             if (this.adapter) {
                 const self = this
-                return new Promise((resolve, reject) => {
+                return new Promise(resolve => {
                     const connecting = () => {
                         this.connect().then((adapterResult) => {
                             resolve(adapterResult)

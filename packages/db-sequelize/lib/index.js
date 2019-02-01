@@ -1,3 +1,9 @@
+/*
+ * Author: Kevin Ries (kevin@fachw3rk.de)
+ * -----
+ * Copyright 2019 Fachwerk
+ */
+
 const Sequelize = require('sequelize')
 const op = Sequelize.Op
 
@@ -17,7 +23,7 @@ module.exports = (...options) => {
             }
 
             this.$service = service
-            this.idFieldName = service.settings.idField
+            this.idFieldName = service.settings.idFieldName
             this.log = weave.getLogger('Sequelize DB adapter')
         },
         connect () {
@@ -28,6 +34,14 @@ module.exports = (...options) => {
                     this.model = this.db.define(modelDefinition.name, modelDefinition.schema, modelDefinition.options)
                     return this.model.sync()
                 })
+        },
+        disconnect () {
+            return new Promise((resolve, reject) => {
+                this.db.close((error) => {
+                    if (error) return reject(error)
+                    return resolve()
+                })
+            })
         },
         createMany(entities) {
             return this.model.bulkCreate(entities)
