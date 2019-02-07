@@ -137,11 +137,13 @@ function MongoDbAdapter (options) {
             return this.collection
                 .remove({ [this.$idField]: stringToObjectID(id) })
         },
-        modelToObject (model) {
-            const data = Object.assign({}, model)
+        entityToObject (entity) {
+            const data = Object.assign({}, entity)
             if (data._id) {
-                data._id = objectIDToString(model._id)
+                data._id = objectIDToString(entity._id)
             }
+
+            // todo: convert all ObjectIds in doc
             return data
         }
     }
