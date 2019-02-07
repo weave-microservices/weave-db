@@ -32,6 +32,9 @@
   },
   "jest": {
     "testEnvironment": "node",
+    "setupFilesAfterEnv": [
+      "../test/setup.js"
+    ],
     "rootDir": "./lib",
     "roots": [
       "../test/integration"
