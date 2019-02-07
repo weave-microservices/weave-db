@@ -85,6 +85,9 @@ module.exports = (...options) => {
 
             return this.model.findAll(options)
         },
+        findOne (query) {
+            throw new Error('Method not implemented.')
+        },
         findById (id) {
             return this.model.findById(id)
         },
@@ -97,13 +100,13 @@ module.exports = (...options) => {
                 }
             })
         },
-        updateById (id, entity) {
-            return this.model.update(entity, { where: { [this.idFieldName]: id }})
+        updateById (id, updatedEntity) {
+            return this.findById(id).then(entity => entity.update(updatedEntity))
         },
         removeById (id) {
             return this.model.destroy({ where: { [this.idFieldName]: id }})   
         },
-        modelToObject (model) {
+        entityToObject (model) {
             return model.get({ plain: true })
         }
     }
