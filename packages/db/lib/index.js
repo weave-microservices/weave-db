@@ -4,8 +4,11 @@
  * Copyright 2019 Fachwerk
  */
 
+// npm packages
 const { isFunction, isObject } = require('lodash')
 const { promisify } = require('fachwork')
+
+// own modules
 const NeDbAdapter = require('./nedb-adapter')
 const { DocumentNotFoundError } = require('./errors')
 
@@ -15,7 +18,7 @@ module.exports = () => {
             idFieldName: '_id',
             pageSize: 10,
             maxPageSize: 1000,
-            populates: null,
+            lookups: null,
             fields: null,
             entityValidator: null
         },
@@ -61,7 +64,7 @@ module.exports = () => {
                 },
                 params: {
                     id: { type: 'any' },
-                    populate: { type: 'array', contains: { type: 'string' }, optional: true },
+                    lookup: { type: 'array', contains: { type: 'string' }, optional: true },
                     mapIds: { type: 'boolean', optional: true }
                 },
                 handler (context) {
@@ -87,12 +90,12 @@ module.exports = () => {
             },
             find: {
                 cache: {
-                    keys: ['populate', 'query']
+                    keys: ['lookup', 'query']
                 },
                 params: {
                     query: { type: 'any', optional: true },
                     sort: { type: 'any', optional: true },
-                    populate: { type: 'array', contains: { type: 'string' }, optional: true },
+                    lookup: { type: 'array', contains: { type: 'string' }, optional: true },
                     fields: { type: 'array', contains: { type: 'string' }, optional: true },
                     limit: { type: 'number', optional: true, convert: true },
                     offset: { type: 'number', optional: true, convert: true }
@@ -100,6 +103,24 @@ module.exports = () => {
                 handler (context) {
                     const params = this.sanitizeParams(context, context.params)
                     return this.adapter.find(params)
+                        .then(docs => this.transformDocuments(context, params, docs))
+                }
+            },
+            findOne: {
+                cache: {
+                    keys: ['lookup', 'query']
+                },
+                params: {
+                    query: { type: 'any', optional: true },
+                    lookup: { type: 'array', contains: { type: 'string' }, optional: true },
+                    fields: { type: 'array', contains: { type: 'string' }, optional: true }
+                },
+                handler (context) {
+                    // sanitize the given parameters
+                    const params = this.sanitizeParams(context, context.params)
+
+                    // send params to the adapter
+                    return this.adapter.findOne(params.query)
                         .then(doc => this.transformDocuments(context, params, doc))
                 }
             },
@@ -109,7 +130,7 @@ module.exports = () => {
              * @actions
              * @cached
              *
-             * @param {Array<String>?} populate - Populated fields.
+             * @param {Array<String>?} lookup - Lookup fields from other services.
              * @param {Array<String>?} fields - Fields filter.
              * @param {Number} limit - Max count of rows.
              * @param {Number} offset - Count of skipped rows.
@@ -122,12 +143,12 @@ module.exports = () => {
              */
             list: {
                 cache: {
-                    keys: ['populate', 'query', 'page', 'pageSize']
+                    keys: ['lookup', 'query', 'page', 'pageSize']
                 },
                 params: {
                     query: { type: 'any', optional: true },
                     sort: { type: 'any', optional: true },
-                    populate: { type: 'array', contains: { type: 'string' }, optional: true },
+                    lookup: { type: 'array', contains: { type: 'string' }, optional: true },
                     fields: { type: 'array', contains: { type: 'string' }, optional: true },
                     page: { type: 'number', optional: true, convert: true },
                     pageSize: { type: 'number', optional: true, convert: true }
@@ -136,6 +157,7 @@ module.exports = () => {
                     const params = this.sanitizeParams(context, context.params)
                     const countParams = Object.assign({}, params)
 
+                    // Remove params for count action
                     if (countParams.limit) {
                         countParams.limit = null
                     }
@@ -146,20 +168,18 @@ module.exports = () => {
 
                     return Promise.all([
                         this.adapter.find(params),
-                        this.adapter.count(countParams.query)
+                        this.adapter.count(countParams)
                     ])
-                        .then(res => {
-                            return this.transformDocuments(context, params, res[0])
-                                .then(doc => {
-                                    return {
-                                        rows: doc,
-                                        totalRows: res[1],
-                                        page: params.page,
-                                        pageSize: params.pageSize,
-                                        totalPages: Math.floor((res[1] + params.pageSize - 1) / params.pageSize)
-                                    }
-                                })
-                        })
+                        .then(res => this.transformDocuments(context, params, res[0])
+                            .then(doc => {
+                                return {
+                                    rows: doc,
+                                    totalRows: res[1],
+                                    page: params.page,
+                                    pageSize: params.pageSize,
+                                    totalPages: Math.floor((res[1] + params.pageSize - 1) / params.pageSize)
+                                }
+                            }))
                 }
             },
             findStream: {
@@ -211,7 +231,7 @@ module.exports = () => {
                             if (!doc) {
                                 return Promise.reject(new DocumentNotFoundError(id))
                             }
-                            this.transformDocuments(context, context.params, doc)
+                            return this.transformDocuments(context, context.params, doc)
                         })
                         .then(data => this.entityChanged('Updated', data, context).then(() => data))
                 }
@@ -250,36 +270,36 @@ module.exports = () => {
                 return this.adapter.disconnect()
             },
             sanitizeParams (context, params) {
-                const sanitizeParams = Object.assign({}, params)
+                const sanitizedParams = Object.assign({}, params)
 
-                if (typeof sanitizeParams.limit === 'string') {
-                    sanitizeParams.limit = Number(sanitizeParams.limit)
+                if (typeof sanitizedParams.limit === 'string') {
+                    sanitizedParams.limit = Number(sanitizedParams.limit)
                 }
-                if (typeof sanitizeParams.offset === 'string') {
-                    sanitizeParams.offset = Number(sanitizeParams.offset)
+                if (typeof sanitizedParams.offset === 'string') {
+                    sanitizedParams.offset = Number(sanitizedParams.offset)
                 }
-                if (typeof sanitizeParams.page === 'string') {
-                    sanitizeParams.page = Number(sanitizeParams.page)
+                if (typeof sanitizedParams.page === 'string') {
+                    sanitizedParams.page = Number(sanitizedParams.page)
                 }
-                if (typeof sanitizeParams.pageSize === 'string') {
-                    sanitizeParams.pageSize = Number(sanitizeParams.pageSize)
+                if (typeof sanitizedParams.pageSize === 'string') {
+                    sanitizedParams.pageSize = Number(sanitizedParams.pageSize)
                 }
-                if (typeof sanitizeParams.populate === 'string') {
-                    sanitizeParams.populate = sanitizeParams.populate.split(' ')
+                if (typeof sanitizedParams.lookup === 'string') {
+                    sanitizedParams.lookup = sanitizedParams.lookup.split(' ')
                 }
 
                 if (context.action.name.endsWith('.list')) {
-                    if (!sanitizeParams.page) {
-                        sanitizeParams.page = 1
+                    if (!sanitizedParams.page) {
+                        sanitizedParams.page = 1
                     }
 
-                    if (!sanitizeParams.pageSize) {
-                        sanitizeParams.pageSize = this.settings.pageSize
+                    if (!sanitizedParams.pageSize) {
+                        sanitizedParams.pageSize = this.settings.pageSize
                     }
-                    sanitizeParams.limit = sanitizeParams.pageSize
-                    sanitizeParams.offset = (sanitizeParams.page - 1) * sanitizeParams.pageSize
+                    sanitizedParams.limit = sanitizedParams.pageSize
+                    sanitizedParams.offset = (sanitizedParams.page - 1) * sanitizedParams.pageSize
                 }
-                return sanitizeParams
+                return sanitizedParams
             },
             model (context, params) { // by ids
                 return Promise.resolve(params)
@@ -293,6 +313,8 @@ module.exports = () => {
             },
             transformDocuments (context, params, docs) {
                 let isDoc = false
+
+                // if docs is a single doc - wrap it in an array
                 if (!Array.isArray(docs)) {
                     if (isObject(docs)) {
                         isDoc = true
@@ -302,13 +324,13 @@ module.exports = () => {
                     }
                 }
                 return Promise.resolve(docs)
-                    .then(docs => docs.map(doc => this.adapter.modelToObject(doc)))
-                    .then(json => params.populate ? this.populateDocs(context, json, params.populate) : json)
+                    .then(docs => docs.map(doc => this.adapter.entityToObject(doc)))
+                    .then(json => params.lookup ? this.lookupDocs(context, json, params.lookup) : json)
                     .then(json => this.filterFields(json, params.fields ? params.fields : this.settings.fields))
                     .then(json => isDoc ? json[0] : json)
             },
-            populateDocs (context, docs, populateFields) {
-                if (!this.settings.populates || !Array.isArray(populateFields) || populateFields.length === 0) {
+            lookupDocs (context, docs, lookupFields) {
+                if (!this.settings.lookups || !Array.isArray(lookupFields) || lookupFields.length === 0) {
                     return Promise.resolve(docs)
                 }
 
@@ -317,10 +339,10 @@ module.exports = () => {
                 }
 
                 const promises = []
-                Object.keys(this.settings.populates).forEach(key => {
-                    let rule = this.settings.populates[key]
+                Object.keys(this.settings.lookups).forEach(key => {
+                    let rule = this.settings.lookups[key]
 
-                    if (populateFields.indexOf(key) === -1) {
+                    if (lookupFields.indexOf(key) === -1) {
                         return
                     }
 
@@ -346,10 +368,10 @@ module.exports = () => {
                     const arr = Array.isArray(docs) ? docs : [docs]
                     const idList = arr.map(doc => getProperty(doc, key))
 
-                    const transformResponse = populatedDocs => {
+                    const transformResponse = lookedUpDocs => {
                         arr.forEach(doc => {
                             const id = doc[key]
-                            doc[key] = populatedDocs === null ? null : populatedDocs[id]
+                            doc[key] = lookedUpDocs === null ? null : lookedUpDocs[id]
                         })
                     }
 
@@ -377,12 +399,16 @@ module.exports = () => {
                                 return docs.map((entity) => {
                                     const result = {}
                                     fields.forEach(field => (result[field] = entity[field]))
-                                    if (Object.keys(result).length > 0) return result
+                                    if (Object.keys(result).length > 0) {
+                                        return result
+                                    }
                                 })
                             } else {
                                 const result = {}
                                 fields.forEach(field => (result[field] = docs[field]))
-                                if (Object.keys(result).length > 0) return result
+                                if (Object.keys(result).length > 0) {
+                                    return result
+                                }
                             }
                         }
                         return docs
@@ -400,7 +426,6 @@ module.exports = () => {
             },
             clearCache () {
                 this.log.debug(`Clear Cache for service: ${this.name}`)
-
                 this.broker.broadcast(`cache.clear.${this.name}`)
                 if (this.broker.cache) {
                     this.broker.cache.clear(`${this.name}.*`)

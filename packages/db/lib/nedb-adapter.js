@@ -58,11 +58,11 @@ function WeaveDbAdapter (options = {}) {
         },
         findById (id) {
             return new Promise((resolve, reject) => {
-                this.db.findOne({ [this.$idFieldName]: id }).exec((error, docs) => {
+                this.db.findOne({ [this.$idFieldName]: id }).exec((error, doc) => {
                     if (error) {
                         return reject(error)
                     }
-                    return resolve(docs)
+                    return resolve(doc)
                 })
             })
         },
@@ -106,13 +106,23 @@ function WeaveDbAdapter (options = {}) {
                 })
             })
         },
+        findOne (query) {
+            return new Promise((resolve, reject) => {
+                this.db.findOne(query).exec((error, docs) => {
+                    if (error) {
+                        return reject(error)
+                    }
+                    return resolve(docs)
+                })
+            })
+        },
         updateById (id, entity) {
             return this.db.find({ id }).assign(entity).write()
         },
         removeById (id) {
             return this.db.remove({ id }).write()
         },
-        modelToObject (doc) {
+        entityToObject (doc) {
             return doc
         }
     }
