@@ -121,6 +121,48 @@ describe('db-service CRUD methods', () => {
             })
     })
 
+    it('should find a single doc by query.', () => {
+        return broker.call('test.findOne', { query: { name: 'Weave_doc.pdf' }})
+            .then(result => {
+                equalAtLeast(result, docs[1])
+            })
+    })
+
+    it('should find docs paginated.', () => {
+        return broker.call('test.list')
+            .then(results => {
+                expect(results.page).toBe(1)
+                expect(results.pageSize).toBe(10)
+                expect(results.rows.length).toBe(4)
+                expect(results.totalPages).toBe(1)
+                expect(results.totalRows).toBe(4)
+            })
+    })
+
+    it('should find docs paginated with query.', () => {
+        return broker.call('test.list', { query: { name: 'Testfile.txt' }})
+            .then(results => {
+                expect(results.page).toBe(1)
+                expect(results.pageSize).toBe(10)
+                expect(results.rows.length).toBe(1)
+                expect(results.totalPages).toBe(1)
+                expect(results.totalRows).toBe(1)
+                equalAtLeast(results.rows[0], docs[0])
+            })
+    })
+
+    it('should find docs paginated with query.', () => {
+        return broker.call('test.list', { pageSize: 1, page: 2 })
+            .then(results => {
+                expect(results.page).toBe(2)
+                expect(results.pageSize).toBe(1)
+                expect(results.rows.length).toBe(1)
+                expect(results.totalPages).toBe(4)
+                expect(results.totalRows).toBe(4)
+                // equalAtLeast(results.rows[0], docs[1])
+            })
+    })
+
     it('should update a doc.', () => {
         return broker.call('test.find', { query: { _id: docs[1]._id }})
             .then(results => {

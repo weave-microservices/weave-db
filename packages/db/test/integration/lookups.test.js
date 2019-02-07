@@ -20,7 +20,7 @@ const equalAtLeast = (obj, origin) => {
     })
 }
 
-describe('db-service populates test', () => {
+describe.only('db-service populates test', () => {
     const broker = Weave({
         logLevel: 'error'
     })
@@ -33,7 +33,7 @@ describe('db-service populates test', () => {
         },
         settings: {
             fields: ['_id', 'title', 'content', 'clicks', 'author'],
-            populates: {
+            lookups: {
                 author: 'user.get'
             }
         }
@@ -46,7 +46,19 @@ describe('db-service populates test', () => {
             name: 'users'
         },
         settings: {
-            fields: ['_id', 'username', 'firstname', 'lastname']
+            fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
+            lookups: {
+                threads: function (context, docs, bla) {
+                    return Promise.all(
+                        docs.map(doc => {
+                            return context.call('thread.find', { query: { author: doc._id }})
+                                .then(results => {
+                                    doc.threads = results
+                                })
+                        })
+                    )
+                }
+            }
         }
     })
     beforeAll(() => {
@@ -74,11 +86,21 @@ describe('db-service populates test', () => {
             })
     })
 
-    it('should get the populated doc', () => {
-        return broker.call('thread.get', { id: threads[1]._id, populate: ['author'] })
+    it('should get the looked up doc', () => {
+        return broker.call('thread.get', { id: threads[1]._id, lookup: ['author'] })
             .then(result => {
                 expect(result).toBeDefined()
                 equalAtLeast(users[0], result.author)
+            })
+    })
+
+    it('should get the looked up docs as array', () => {
+        return broker.call('user.get', { id: users[1]._id, lookup: ['threads'] })
+            .then(result => {
+                expect(result.threads).toBeDefined()
+                expect(result.threads).toBeInstanceOf(Array)
+                expect(result.threads.length).toBe(1)
+                equalAtLeast(result.threads[0], threads[0])
             })
     })
 })
