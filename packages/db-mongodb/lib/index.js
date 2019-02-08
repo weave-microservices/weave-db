@@ -65,10 +65,10 @@ function MongoDbAdapter (options) {
                 })
             })
         },
-        count (filterParams) {
-            filterParams = filterParams || {}
+        count (params) {
+            const query = params.query || {}
             return this.collection
-                .find(filterParams)
+                .find(query)
                 .count()
         },
         insert (entity) {

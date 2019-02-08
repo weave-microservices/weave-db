@@ -1,2 +1,5 @@
 packages/db/test.db
 node_modules*
+test.db
+threads.db
+users.db
