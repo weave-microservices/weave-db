@@ -1,6 +1,6 @@
 {
   "name": "@weave-js/db",
-  "version": "0.0.31",
+  "version": "0.0.41",
   "description": "weave-db service",
   "main": "lib/index.js",
   "scripts": {
