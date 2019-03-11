@@ -9,17 +9,17 @@ const NeDB = require('nedb-core')
 function WeaveDbAdapter (options = {}) {
     return {
         init (broker, service) {
-            if (!service.schema.model) {
-                throw new Error('Model not defined!')
+            if (!service.schema.collectionName) {
+                throw new Error('Collection name is missing!')
             }
-            this.model = service.schema.model
+            this.collectionName = service.schema.collectionName
             this.$idFieldName = service.schema.settings.idFieldName || '_id'
         },
         connect () {
             return new Promise((resolve, reject) => {
                 try {
                     this.db = new NeDB({
-                        filename: `${this.model.name}.db`,
+                        filename: `${this.collectionName}.db`,
                         autoload: true
                     })
 
