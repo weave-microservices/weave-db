@@ -28,9 +28,7 @@ describe.only('db-service populates test', () => {
     broker.createService({
         name: 'thread',
         mixins: DbService(),
-        model: {
-            name: 'threads'
-        },
+        collectionName: 'threads',
         settings: {
             fields: ['_id', 'title', 'content', 'clicks', 'author'],
             lookups: {
@@ -42,9 +40,7 @@ describe.only('db-service populates test', () => {
     broker.createService({
         name: 'user',
         mixins: DbService(),
-        model: {
-            name: 'users'
-        },
+        collectionName: 'users',
         settings: {
             fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
             lookups: {

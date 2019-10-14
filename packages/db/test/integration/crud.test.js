@@ -24,9 +24,7 @@ describe('db-service CRUD methods', () => {
         name: 'test',
         mixins: DbService(),
         adapter: DbAdapter(),
-        model: {
-            name: 'test'
-        },
+        collectionName: 'test',
         settings: {
             // fields: ['id', 'name']
         }

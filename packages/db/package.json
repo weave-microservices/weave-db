@@ -1,6 +1,6 @@
 {
   "name": "@weave-js/db",
-  "version": "0.0.43",
+  "version": "0.7.0-beta.1",
   "description": "weave-db service",
   "main": "lib/index.js",
   "scripts": {
@@ -20,15 +20,15 @@
   "dependencies": {
     "fachwork": "0.0.10",
     "nedb-core": "^3.0.6",
-    "uuid": "^3.3.2"
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
-    "@weave-js/core": "^0.5.33",
+    "@weave-js/core": "^0.7.0-beta.1",
     "eslint": "^5.12.1",
     "eslint-config-fw": "^1.0.3",
-    "eslint-loader": "^2.1.1",
+    "eslint-loader": "^3.0.2",
     "istanbul": "^0.4.5",
-    "jest": "^24.0.0"
+    "jest": "^24.9.0"
   },
   "jest": {
     "testEnvironment": "node",
