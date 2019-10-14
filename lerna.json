@@ -3,7 +3,7 @@
     "packages": [
       "packages/*"
     ],
-    "version": "0.7.0-beta.1",
+    "version": "independent",
     "command": {
       "bootstrap": {
         "hoist": true
