@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0-rc.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.0.14...@weave-js/db-mongodb@0.7.0-rc.0) (2019-11-07)
+
+
+### Bug Fixes
+
+* Fixed update action, updated logger creation ([3c19970](https://github.com/weave-microservices/weave-db/commit/3c19970))
+
+
+
+
+
 ## [0.0.14](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.0.13...@weave-js/db-mongodb@0.0.14) (2019-02-08)
 
 
