@@ -38,6 +38,7 @@ module.exports = () => {
                 },
                 handler (context) {
                     const params = this.sanitizeParams(context, context.params)
+
                     if (params.limit) {
                         params.limit = null
                     }
@@ -45,6 +46,7 @@ module.exports = () => {
                     if (params.offset) {
                         params.offset = null
                     }
+
                     return this.adapter.count(params)
                 }
             },
@@ -74,6 +76,7 @@ module.exports = () => {
                             if (!docs) {
                                 return Promise.reject(new DocumentNotFoundError(id))
                             }
+
                             return this.transformDocuments(context, context.params, docs)
                         })
                         .then(docs => {
@@ -415,7 +418,7 @@ module.exports = () => {
                     })
             },
             entityChanged (type, data, context) {
-                this.log.debug('Doc changed')
+                this.log.debug('Document changed')
                 return this.clearCache().then(() => {
                     const eventName = `doc${type}`
                     if (isFunction(this.schema[eventName])) {
@@ -425,10 +428,10 @@ module.exports = () => {
                 })
             },
             clearCache () {
-                this.log.debug(`Clear Cache for service: ${this.name}`)
-                this.broker.broadcast(`cache.clear.${this.name}`)
+                this.log.debug(`Clear cache for service: ${this.name}`)
+                this.broker.broadcast(`$cache.clear.${this.name}`)
                 if (this.broker.cache) {
-                    this.broker.cache.clear(`${this.name}.*`)
+                    return this.broker.cache.clear(`${this.name}.*`)
                 }
                 return Promise.resolve()
             },
@@ -448,8 +451,9 @@ module.exports = () => {
             }
 
             this.adapter.init(this.broker, this)
-            this.log.debug(`Weave db initialized for service ${this.name}`)
+            this.log.debug(`Weave db module initialized for service ${this.name}`)
 
+            // entity validation
             if (this.broker.validator && this.settings.entityValidator) {
                 const check = this.broker.validator.compile(this.settings.entityValidator)
                 this.settings.entityValidator = entity => {
@@ -479,7 +483,7 @@ module.exports = () => {
                     connecting()
                 })
             }
-            return Promise.reject(new Error('Please set the store adapter in schema!'))
+            return Promise.reject(new Error('Please set the database adapter in schema!'))
         },
         stopped () {
             this.disconnect()

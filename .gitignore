@@ -3,3 +3,5 @@ node_modules*
 test.db
 threads.db
 users.db
+packages/db/.vscode
+lerna-debug.log

@@ -12,6 +12,7 @@ function WeaveDbAdapter (options = {}) {
             if (!service.schema.collectionName) {
                 throw new Error('Collection name is missing!')
             }
+            this.broker = broker
             this.collectionName = service.schema.collectionName
             this.$idFieldName = service.schema.settings.idFieldName || '_id'
         },
@@ -82,9 +83,9 @@ function WeaveDbAdapter (options = {}) {
 
                 let q = this.db.find(query)
 
-                if (query[this.$idFieldName]) {
-                    // query[this.$idField] = stringToObjectID(query[this.$idField])
-                }
+                // if (query[this.$idFieldName]) {
+                //     query[this.$idField] = stringToObjectID(query[this.$idField])
+                // }
 
                 if (params.limit) {
                     q = q.limit(Number(params.limit))

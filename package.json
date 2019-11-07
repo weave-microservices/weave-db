@@ -2,6 +2,7 @@
   "name": "weave-db",
   "description": "<img src=\"Logo.png\" width=\"400\">",
   "scripts": {
+    "postinstall": "lerna bootstrap --hoist",
     "setup": "npm install && lerna bootstrap",
     "link": "lerna link --force-local",
     "test": "lerna run test"
@@ -22,6 +23,6 @@
   },
   "homepage": "https://github.com/fachw3rk/weave#readme",
   "devDependencies": {
-    "lerna": "^3.10.7"
+    "lerna": "^3.18.3"
   }
 }
