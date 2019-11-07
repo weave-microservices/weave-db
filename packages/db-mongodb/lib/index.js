@@ -11,7 +11,10 @@ function MongoDbAdapter (options) {
     let transformer
 
     options = defaultsDeep(options, {
-        transform: true
+        transform: true,
+        options: {
+            useUnifiedTopology: true
+        }
     })
 
     function transform (entity) {
@@ -45,7 +48,7 @@ function MongoDbAdapter (options) {
             this.$collectionName = service.schema.collectionName
             this.$idField = service.schema.settings.idFieldName || '_id'
 
-            this.log = broker.getLogger('MONGODB')
+            this.log = broker.createLogger('MONGODB_ADAPTER')
         },
         connect () {
             return MongoClient.connect(options.url, options.options).then(client => {
@@ -53,7 +56,7 @@ function MongoDbAdapter (options) {
                 this.db = this.$service.db = client.db ? client.db(options.database) : client
                 this.collection = this.$service.db.collection(this.$collectionName)
 
-                this.log.debug('Successfull connected!')
+                this.log.debug('Database connection etablished')
                 return { dbInstance: this.db }
             })
         },
@@ -111,6 +114,7 @@ function MongoDbAdapter (options) {
                 if (params.sort) {
                     q = q.sort(params.sort)
                 }
+
                 const stream = q.stream()
 
                 if (params.asStream === true) {
@@ -119,7 +123,7 @@ function MongoDbAdapter (options) {
                     stream.on('data', (data) => {
                         buffer.push(data)
                     })
-                    stream.on('end', (data) => {
+                    stream.on('end', () => {
                         return resolve(buffer)
                     })
                     stream.on('error', (error) => {
@@ -131,7 +135,7 @@ function MongoDbAdapter (options) {
         updateById (id, entity) {
             return Promise.resolve(entity)
                 .then(entity => transform(entity))
-                .then(entity => this.collection.updateOne({ [this.$idField]: new ObjectID(id) }, entity))
+                .then(entity => this.collection.updateOne({ [this.$idField]: new ObjectID(id) }, { $set: entity }))
         },
         removeById (id) {
             return this.collection
