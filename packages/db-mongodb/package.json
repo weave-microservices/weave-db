@@ -22,7 +22,7 @@
     "jest": "^24.9.0"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.13",
     "mongodb": "^3.3.3"
   },
   "gitHead": "157d0239e764a8138d7cdce28793f39859d2a353"
