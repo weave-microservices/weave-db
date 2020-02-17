@@ -66,6 +66,7 @@ module.exports = () => {
                 },
                 params: {
                     id: { type: 'any' },
+                    fields: { type: 'array', contains: { type: 'string' }, optional: true },
                     lookup: { type: 'array', contains: { type: 'string' }, optional: true },
                     mapIds: { type: 'boolean', optional: true }
                 },
@@ -82,11 +83,14 @@ module.exports = () => {
                         .then(docs => {
                             if (Array.isArray(docs) && mapIds) {
                                 const result = {}
+
                                 docs.forEach(doc => {
                                     result[doc[this.settings.idFieldName]] = doc
                                 })
+
                                 return result
                             }
+
                             return docs
                         })
                 }
@@ -312,7 +316,7 @@ module.exports = () => {
                         }
                         return this.adapter.findById(id)
                     })
-                    .then(data => this.filterFields(data, context.params.fields))
+                    // .then(data => this.filterFields(data, context.params.fields))
             },
             transformDocuments (context, params, docs) {
                 let isDoc = false
@@ -326,6 +330,7 @@ module.exports = () => {
                         return Promise.resolve(docs)
                     }
                 }
+                
                 return Promise.resolve(docs)
                     .then(docs => docs.map(doc => this.adapter.entityToObject(doc)))
                     .then(json => params.lookup ? this.lookupDocs(context, json, params.lookup) : json)
@@ -342,6 +347,7 @@ module.exports = () => {
                 }
 
                 const promises = []
+
                 Object.keys(this.settings.lookups).forEach(key => {
                     let rule = this.settings.lookups[key]
 
@@ -369,12 +375,17 @@ module.exports = () => {
                     }
 
                     const arr = Array.isArray(docs) ? docs : [docs]
-                    const idList = arr.map(doc => getProperty(doc, key))
+                    const idList = arr.map(doc => getProperty(doc, key)).flat()
 
                     const transformResponse = lookedUpDocs => {
                         arr.forEach(doc => {
                             const id = doc[key]
-                            doc[key] = lookedUpDocs === null ? null : lookedUpDocs[id]
+
+                            if (Array.isArray(id)) {
+                                doc[key] = id.map(id => lookedUpDocs[id]).filter(Boolean)
+                            } else {
+                                doc[key] = lookedUpDocs === null ? null : lookedUpDocs[id]
+                            }
                         })
                     }
 
@@ -392,7 +403,10 @@ module.exports = () => {
                         promises.push(context.call(rule.action, params).then(transformResponse))
                     }
                 })
-                return Promise.all(promises).then(() => docs)
+                return Promise.all(promises).then(() => {
+
+                    return docs
+                })
             },
             filterFields (docs, fields) {
                 return Promise.resolve(docs)
@@ -401,14 +415,18 @@ module.exports = () => {
                             if (Array.isArray(docs)) {
                                 return docs.map((entity) => {
                                     const result = {}
+
                                     fields.forEach(field => (result[field] = entity[field]))
+
                                     if (Object.keys(result).length > 0) {
                                         return result
                                     }
                                 })
                             } else {
                                 const result = {}
+
                                 fields.forEach(field => (result[field] = docs[field]))
+
                                 if (Object.keys(result).length > 0) {
                                     return result
                                 }
@@ -419,11 +437,14 @@ module.exports = () => {
             },
             entityChanged (type, data, context) {
                 this.log.debug('Document changed')
+
                 return this.clearCache().then(() => {
                     const eventName = `doc${type}`
+
                     if (isFunction(this.schema[eventName])) {
                         this.schema[eventName].call(this, data, context)
                     }
+
                     return Promise.resolve()
                 })
             },
