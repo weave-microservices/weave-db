@@ -1,5 +1,6 @@
 const { Weave } = require('@weave-js/core')
 const DbService = require('../../lib/index')
+require('../setup')
 
 const threads = [
     { title: 'How to use weave?', content: 'Hello World', clicks: 2 },

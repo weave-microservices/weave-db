@@ -2,6 +2,7 @@ const { Weave, Errors } = require('@weave-js/core')
 const DbService = require('../../lib/index')
 const DbAdapter = require('../../lib/nedb-adapter')
 const { DocumentNotFoundError } = require('../../lib/errors')
+require('../setup')
 
 const docs = [
     { name: 'Testfile.txt', content: 'Hello World', size: 2 },

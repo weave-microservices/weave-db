@@ -174,20 +174,17 @@ module.exports = () => {
                         countParams.offset = null
                     }
 
-                    return Promise.all([
-                        this.adapter.find(params),
-                        this.adapter.count(countParams)
-                    ])
-                        .then(res => this.transformDocuments(context, params, res[0])
-                        .then(doc => {
-                            return {
-                                rows: doc,
-                                totalRows: res[1],
-                                page: params.page,
-                                pageSize: params.pageSize,
-                                totalPages: Math.floor((res[1] + params.pageSize - 1) / params.pageSize)
-                            }
-                        }))
+                    return Promise.all([this.adapter.find(params), this.adapter.count(countParams)])
+                        .then(results => this.transformDocuments(context, params, results[0])
+                            .then((doc) => {
+                                return {
+                                    rows: doc,
+                                    totalRows: results[1],
+                                    page: params.page,
+                                    pageSize: params.pageSize,
+                                    totalPages: Math.floor((results[1] + params.pageSize - 1) / params.pageSize)
+                                }
+                            }))
                 }
             },
             findStream: {
@@ -299,7 +296,7 @@ module.exports = () => {
                 if (typeof sanitizedParams.lookup === 'string') {
                     sanitizedParams.lookup = sanitizedParams.lookup.split(' ')
                 }
-                
+
                 // If we use ID mapping and want only specific fields, we need to add the id field to the fieldlist.
                 if (sanitizedParams.mapIds === true) {
                     if (Array.isArray(sanitizedParams.fields) > 0 && !sanitizedParams.fields.includes(this.settings.idFieldName)) {
@@ -321,12 +318,13 @@ module.exports = () => {
 
                 return sanitizedParams
             },
-            getById (params) { // by ids
-                return Promise.resolve(params)
-                    .then(({ id }) => {
+            getById (id) { // by ids
+                return Promise.resolve(id)
+                    .then(id => {
                         if (Array.isArray(id)) {
                             return this.adapter.findByIds(id)
                         }
+
                         return this.adapter.findById(id)
                     })
             },
