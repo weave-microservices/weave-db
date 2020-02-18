@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0-rc.1](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.0...@weave-js/db@0.7.0-rc.1) (2020-02-18)
+
+
+### Bug Fixes
+
+* Fixed data lookup if the source is an array ([c4d145a](https://github.com/weave-microservices/weave-db/commit/c4d145a4f7615e0206b83c223d010cf85b0fd086))
+* Lookup of id arrays ([483f93a](https://github.com/weave-microservices/weave-db/commit/483f93a0288ad4ffe327438075c89c30b40be36b))
+
+
+
+
+
 # [0.7.0-rc.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.0.43...@weave-js/db@0.7.0-rc.0) (2019-11-07)
 
 **Note:** Version bump only for package @weave-js/db
