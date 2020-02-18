@@ -179,15 +179,15 @@ module.exports = () => {
                         this.adapter.count(countParams)
                     ])
                         .then(res => this.transformDocuments(context, params, res[0])
-                            .then(doc => {
-                                return {
-                                    rows: doc,
-                                    totalRows: res[1],
-                                    page: params.page,
-                                    pageSize: params.pageSize,
-                                    totalPages: Math.floor((res[1] + params.pageSize - 1) / params.pageSize)
-                                }
-                            }))
+                        .then(doc => {
+                            return {
+                                rows: doc,
+                                totalRows: res[1],
+                                page: params.page,
+                                pageSize: params.pageSize,
+                                totalPages: Math.floor((res[1] + params.pageSize - 1) / params.pageSize)
+                            }
+                        }))
                 }
             },
             findStream: {
