@@ -12,6 +12,10 @@ const { promisify } = require('fachwork')
 const NeDbAdapter = require('./nedb-adapter')
 const { DocumentNotFoundError } = require('./errors')
 
+const flattenDeep = arr => {
+    return arr.reduce((acc, e) => Array.isArray(e) ? acc.concat(flattenDeep(e)) : acc.concat(e), [])
+}
+
 module.exports = () => {
     return {
         settings: {
@@ -385,7 +389,7 @@ module.exports = () => {
                     }
 
                     const arr = Array.isArray(docs) ? docs : [docs]
-                    const idList = arr.map(doc => getProperty(doc, key)).flat()
+                    const idList = flattenDeep(arr.map(doc => getProperty(doc, key)))
 
                     const transformResponse = lookedUpDocs => {
                         arr.forEach(doc => {
