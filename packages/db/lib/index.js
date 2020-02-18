@@ -62,7 +62,7 @@ module.exports = () => {
              */
             get: {
                 cache: {
-                    keys: ['id']
+                    keys: ['id', 'fields', 'lookup']
                 },
                 params: {
                     id: { type: 'any' },
@@ -71,17 +71,18 @@ module.exports = () => {
                     mapIds: { type: 'boolean', optional: true }
                 },
                 handler (context) {
-                    const { id, mapIds } = context.params
-                    return this.model(context, { id })
+                    const params = this.sanitizeParams(context, context.params)
+
+                    return this.getById(params.id)
                         .then(docs => {
                             if (!docs) {
-                                return Promise.reject(new DocumentNotFoundError(id))
+                                return Promise.reject(new DocumentNotFoundError(params.id))
                             }
 
-                            return this.transformDocuments(context, context.params, docs)
+                            return this.transformDocuments(context, params, docs)
                         })
                         .then(docs => {
-                            if (Array.isArray(docs) && mapIds) {
+                            if (Array.isArray(docs) && params.mapIds) {
                                 const result = {}
 
                                 docs.forEach(doc => {
@@ -282,17 +283,28 @@ module.exports = () => {
                 if (typeof sanitizedParams.limit === 'string') {
                     sanitizedParams.limit = Number(sanitizedParams.limit)
                 }
+
                 if (typeof sanitizedParams.offset === 'string') {
                     sanitizedParams.offset = Number(sanitizedParams.offset)
                 }
+
                 if (typeof sanitizedParams.page === 'string') {
                     sanitizedParams.page = Number(sanitizedParams.page)
                 }
+
                 if (typeof sanitizedParams.pageSize === 'string') {
                     sanitizedParams.pageSize = Number(sanitizedParams.pageSize)
                 }
+
                 if (typeof sanitizedParams.lookup === 'string') {
                     sanitizedParams.lookup = sanitizedParams.lookup.split(' ')
+                }
+                
+                // If we use ID mapping and want only specific fields, we need to add the id field to the fieldlist.
+                if (sanitizedParams.mapIds === true) {
+                    if (Array.isArray(sanitizedParams.fields) > 0 && !sanitizedParams.fields.includes(this.settings.idFieldName)) {
+                        sanitizedParams.fields.push(this.settings.idFieldName)
+                    }
                 }
 
                 if (context.action.name.endsWith('.list')) {
@@ -306,9 +318,10 @@ module.exports = () => {
                     sanitizedParams.limit = sanitizedParams.pageSize
                     sanitizedParams.offset = (sanitizedParams.page - 1) * sanitizedParams.pageSize
                 }
+
                 return sanitizedParams
             },
-            model (context, params) { // by ids
+            getById (params) { // by ids
                 return Promise.resolve(params)
                     .then(({ id }) => {
                         if (Array.isArray(id)) {
@@ -316,7 +329,6 @@ module.exports = () => {
                         }
                         return this.adapter.findById(id)
                     })
-                    // .then(data => this.filterFields(data, context.params.fields))
             },
             transformDocuments (context, params, docs) {
                 let isDoc = false
@@ -330,7 +342,7 @@ module.exports = () => {
                         return Promise.resolve(docs)
                     }
                 }
-                
+
                 return Promise.resolve(docs)
                     .then(docs => docs.map(doc => this.adapter.entityToObject(doc)))
                     .then(json => params.lookup ? this.lookupDocs(context, json, params.lookup) : json)
@@ -415,7 +427,6 @@ module.exports = () => {
                             if (Array.isArray(docs)) {
                                 return docs.map((entity) => {
                                     const result = {}
-
                                     fields.forEach(field => (result[field] = entity[field]))
 
                                     if (Object.keys(result).length > 0) {
@@ -424,9 +435,7 @@ module.exports = () => {
                                 })
                             } else {
                                 const result = {}
-
                                 fields.forEach(field => (result[field] = docs[field]))
-
                                 if (Object.keys(result).length > 0) {
                                     return result
                                 }
@@ -437,14 +446,11 @@ module.exports = () => {
             },
             entityChanged (type, data, context) {
                 this.log.debug('Document changed')
-
                 return this.clearCache().then(() => {
                     const eventName = `doc${type}`
-
                     if (isFunction(this.schema[eventName])) {
                         this.schema[eventName].call(this, data, context)
                     }
-
                     return Promise.resolve()
                 })
             },
@@ -487,6 +493,7 @@ module.exports = () => {
             }
         },
         started () {
+            // todo: validate adapter.
             if (this.adapter) {
                 const self = this
                 return new Promise(resolve => {
@@ -498,7 +505,7 @@ module.exports = () => {
                                 self.log.info('Connection error', error)
                                 self.log.info('reconnecting...')
                                 connecting()
-                            }, 1000)
+                            }, 2000)
                         })
                     }
                     connecting()
