@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0-rc.3](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.2...@weave-js/db@0.7.0-rc.3) (2020-02-18)
+
+
+### Bug Fixes
+
+* Fixed lookup. (missing flat method) ([01fb346](https://github.com/weave-microservices/weave-db/commit/01fb34660c2766fa3ca74ecfde6faf543b87e4c7))
+
+
+
+
+
 # [0.7.0-rc.2](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.1...@weave-js/db@0.7.0-rc.2) (2020-02-18)
 
 
