@@ -5,7 +5,8 @@
     "postinstall": "lerna bootstrap --hoist",
     "setup": "npm install && lerna bootstrap",
     "link": "lerna link --force-local",
-    "test": "lerna run test"
+    "test": "lerna run test",
+    "lint": "lerna run lint"
   },
   "repository": {
     "type": "git",

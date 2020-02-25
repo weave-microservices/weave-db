@@ -3,7 +3,9 @@
   "version": "0.7.0-rc.0",
   "description": "Weave Db adapter for sequelize",
   "main": "lib/index.js",
-  "scripts": {},
+  "scripts": {
+    "lint": "eslint --ext=.js lib --fix"
+  },
   "publishConfig": {
     "access": "public"
   },
