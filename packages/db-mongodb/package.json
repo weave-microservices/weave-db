@@ -17,15 +17,14 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^6.6.0",
+    "eslint": "^6.8.0",
     "eslint-config-fw": "^1.0.3",
-    "eslint-loader": "^3.0.2",
+    "eslint-loader": "^3.0.3",
     "istanbul": "^0.4.5",
-    "jest": "^24.9.0"
+    "jest": "^25.1.0"
   },
   "dependencies": {
-    "lodash": "^4.17.13",
-    "mongodb": "^3.3.3"
+    "mongodb": "^3.5.4"
   },
   "gitHead": "157d0239e764a8138d7cdce28793f39859d2a353"
 }

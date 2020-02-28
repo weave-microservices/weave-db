@@ -5,17 +5,16 @@
  */
 
 const { MongoClient, ObjectID } = require('mongodb')
-const { defaultsDeep } = require('lodash')
 
 function MongoDbAdapter (options) {
   let transformer
 
-  options = defaultsDeep(options, {
+  options = Object.assign({
     transform: true,
     options: {
       useUnifiedTopology: true
     }
-  })
+  }, options)
 
   function transform (entity) {
     return new Promise((resolve, reject) => {
@@ -24,20 +23,6 @@ function MongoDbAdapter (options) {
       }
       return resolve(transformer.transform(entity))
     })
-  }
-
-  function stringToObjectID (value) {
-    if (typeof value === 'string') {
-      return new ObjectID(value)
-    }
-    return value
-  }
-
-  function objectIDToString (objectId) {
-    if (objectId && objectId.toHexString) {
-      return objectId.toHexString()
-    }
-    return objectId
   }
 
   return {
@@ -57,8 +42,8 @@ function MongoDbAdapter (options) {
         this.client = client
         this.db = this.$service.db = client.db ? client.db(options.database) : client
         this.collection = this.$service.db.collection(this.$collectionName)
-
         this.log.debug('Database connection etablished')
+
         return { dbInstance: this.db }
       })
     },
@@ -86,11 +71,11 @@ function MongoDbAdapter (options) {
     },
     findById (id) {
       return this.collection
-        .findOne({ [this.$idField]: stringToObjectID(id) })
+        .findOne({ [this.$idField]: this.stringToObjectID(id) })
     },
     findByIds (ids) {
       return this.collection
-        .find({ [this.$idField]: { $in: ids.map(id => stringToObjectID(id)) }})
+        .find({ [this.$idField]: { $in: ids.map(id => this.stringToObjectID(id)) }})
         .toArray()
     },
     find (params) {
@@ -99,7 +84,7 @@ function MongoDbAdapter (options) {
         const query = params.query || {}
 
         if (query[this.$idField]) {
-          query[this.$idField] = stringToObjectID(query[this.$idField])
+          query[this.$idField] = this.stringToObjectID(query[this.$idField])
         }
 
         let q = this.collection
@@ -137,20 +122,31 @@ function MongoDbAdapter (options) {
     updateById (id, entity) {
       return Promise.resolve(entity)
         .then(entity => transform(entity))
-        .then(entity => this.collection.updateOne({ [this.$idField]: new ObjectID(id) }, { $set: entity }))
+        .then(entity => this.collection.updateOne({ [this.$idField]: this.stringToObjectID(id) }, { $set: entity }))
     },
     removeById (id) {
       return this.collection
-        .remove({ [this.$idField]: stringToObjectID(id) })
+        .remove({ [this.$idField]: this.stringToObjectID(id) })
     },
     entityToObject (entity) {
       const data = Object.assign({}, entity)
-      if (data._id) {
-        data._id = objectIDToString(entity._id)
+      if (data[this.$idField]) {
+        data[this.$idField] = this.objectIDToString(entity[this.$idField])
       }
 
-      // todo: convert all ObjectIds in doc
       return data
+    },
+    objectIDToString (objectId) {
+      if (objectId && objectId.toHexString) {
+        return objectId.toHexString()
+      }
+      return objectId
+    },
+    stringToObjectID (value) {
+      if (typeof value === 'string') {
+        return new ObjectID(value)
+      }
+      return value
     }
   }
 }
