@@ -1,11 +1,12 @@
-<img src="https://raw.githubusercontent.com/fachw3rk/weave/HEAD/Logo.png" width="400">
+# [Weave database plugin](https://github.com/weave-microservices/weave-db/)
 
-> Easy to use multiparadigm micro service framework
+[![Version](https://badgen.net/npm/v/@weave-js/db)](https://www.npmjs.com/package/idle-timeout/)
+[![Build](https://badgen.net/travis/weave-microservices/weave-db/master)](https://github.com/jackmu95/idle-timeout/blob/master/LICENSE)
+[![License](https://badgen.net/npm/license/@weave-js/core)](https://github.com/jackmu95/idle-timeout/blob/master/LICENSE)
+[![Slack](https://badgen.net/badge/chat/on%20slack)](https://weavejs.slack.com)
 
-
-[![NPM Version](https://img.shields.io/npm/v/@weave-js/core.svg)](https://www.npmjs.com/package/@weave-js/core)
-[![Build Status](https://travis-ci.com/weave-microservices/weave-db.svg?branch=master)](https://travis-ci.com/weave-microservices/weave-db)
-[![Maintainability](https://api.codeclimate.com/v1/badges/cb59174696fd9021813a/maintainability)](https://codeclimate.com/github/fachw3rk/weave/maintainability) [![Dependencies](https://david-dm.org/weave-microservices/weave-db.svg)](https://david-dm.org/weave-microservices/weave-db.svg) [![Downloads](https://img.shields.io/npm/dt/@weave-js/core.svg)](https://www.npmjs.com/package/@weave-js/core)
+[![Maintainability](https://badgen.net/codeclimate/maintainability/weave-microservices/weave-db)](https://codeclimate.com/github/weave-microservices/weave)
+[![Maintainability](https://badgen.net/codeclimate/coverage/weave-microservices/weave-db)](https://codeclimate.com/github/weave-microservices/weave)
 # Weave
 
 Weave is a fast and easy to use  microservice framework for NodeJS (>= v6.x).

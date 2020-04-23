@@ -31,10 +31,7 @@ module.exports = () => {
       /**
        * Get count of entities by query.
        *
-       * @actions
-       *
        * @param {Object} query - Query object. Passes to adapter.
-       *
        * @returns {Number} List of found entities.
       */
       count: {
@@ -405,9 +402,11 @@ module.exports = () => {
 
           if (rule.handler) {
             let ruleResult = rule.handler.call(this, context, arr, idList, rule)
+
             if (isFunction(rule.transformation)) {
               ruleResult = ruleResult.then(rule.transformation)
             }
+
             promises.push(ruleResult)
           } else {
             const params = Object.assign({
@@ -417,6 +416,7 @@ module.exports = () => {
             promises.push(context.call(rule.action, params).then(transformResponse))
           }
         })
+
         return Promise.all(promises).then(() => {
           return docs
         })
