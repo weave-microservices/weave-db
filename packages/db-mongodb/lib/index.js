@@ -1,29 +1,18 @@
 /*
  * Author: Kevin Ries (kevin@fachw3rk.de)
  * -----
- * Copyright 2018 Fachwerk
+ * Copyright 2020 Fachwerk
  */
 
 const { MongoClient, ObjectID } = require('mongodb')
 
 function MongoDbAdapter (options) {
-  let transformer
-
   options = Object.assign({
     transform: true,
     options: {
       useUnifiedTopology: true
     }
   }, options)
-
-  function transform (entity) {
-    return new Promise((resolve, reject) => {
-      if (!transformer) {
-        return resolve(entity)
-      }
-      return resolve(transformer.transform(entity))
-    })
-  }
 
   return {
     init (broker, service) {
@@ -42,6 +31,7 @@ function MongoDbAdapter (options) {
         this.client = client
         this.db = this.$service.db = client.db ? client.db(options.database) : client
         this.collection = this.$service.db.collection(this.$collectionName)
+
         this.log.debug('Database connection etablished')
 
         return { dbInstance: this.db }
@@ -62,9 +52,8 @@ function MongoDbAdapter (options) {
         .count()
     },
     insert (entity) {
-      return Promise.resolve(entity)
-        .then(ent => transform(ent))
-        .then(entity => this.collection.insertOne(entity))
+      return this.collection.insertOne(entity)
+        .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
     findOne (query) {
       return this.collection.findOne(query)
@@ -75,7 +64,11 @@ function MongoDbAdapter (options) {
     },
     findByIds (ids) {
       return this.collection
-        .find({ [this.$idField]: { $in: ids.map(id => this.stringToObjectID(id)) }})
+        .find({
+          [this.$idField]: {
+            $in: ids.map(id => this.stringToObjectID(id))
+          }
+        })
         .toArray()
     },
     find (params) {
@@ -87,22 +80,21 @@ function MongoDbAdapter (options) {
           query[this.$idField] = this.stringToObjectID(query[this.$idField])
         }
 
-        let q = this.collection
-          .find(query, params.projection)
+        let cursor = this.collection.find(query, params.projection)
 
         if (params.limit) {
-          q = q.limit(Number(params.limit))
+          cursor = cursor.limit(Number(params.limit))
         }
 
         if (params.offset) {
-          q = q.skip(params.offset)
+          cursor = cursor.skip(params.offset)
         }
 
         if (params.sort) {
-          q = q.sort(params.sort)
+          cursor = cursor.sort(params.sort)
         }
 
-        const stream = q.stream()
+        const stream = cursor.stream()
 
         if (params.asStream === true) {
           return stream
@@ -110,9 +102,11 @@ function MongoDbAdapter (options) {
           stream.on('data', (data) => {
             buffer.push(data)
           })
+
           stream.on('end', () => {
             return resolve(buffer)
           })
+
           stream.on('error', (error) => {
             return reject(error)
           })
@@ -120,16 +114,22 @@ function MongoDbAdapter (options) {
       })
     },
     updateById (id, entity) {
-      return Promise.resolve(entity)
-        .then(entity => transform(entity))
-        .then(entity => this.collection.updateOne({ [this.$idField]: this.stringToObjectID(id) }, { $set: entity }))
+      return this.collection
+        .findOneAndUpdate(
+          { [this.$idField]: this.stringToObjectID(id) },
+          entity,
+          { returnOriginal: false }
+        )
+        .then(result => result.value)
     },
     removeById (id) {
       return this.collection
-        .remove({ [this.$idField]: this.stringToObjectID(id) })
+        .findOneAndDelete({ [this.$idField]: this.stringToObjectID(id) })
+        .then(result => result.value)
     },
     entityToObject (entity) {
       const data = Object.assign({}, entity)
+
       if (data[this.$idField]) {
         data[this.$idField] = this.objectIDToString(entity[this.$idField])
       }
