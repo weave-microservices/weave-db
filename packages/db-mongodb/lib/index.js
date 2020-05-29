@@ -52,7 +52,8 @@ function MongoDbAdapter (options) {
         .count()
     },
     insert (entity) {
-      return this.collection.insertOne(entity)
+      return this.collection
+        .insertOne(entity)
         .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
     findOne (query) {

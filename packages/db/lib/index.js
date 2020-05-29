@@ -30,7 +30,6 @@ module.exports = () => {
     actions: {
       /**
        * Get count of entities by query.
-       *
        * @param {Object} query - Query object. Passes to adapter.
        * @returns {Number} List of found entities.
       */
@@ -214,14 +213,9 @@ module.exports = () => {
         },
         handler (context) {
           const { entities } = context.params
-          const entitySet = entities.map((entity) => {
-            return this.validateEntity(entity).then(res => {
-              return res
-            })
-          })
-          return Promise.all(entitySet).then(res => {
-            return this.adapter.insertMany(res)
-          })
+          return Promise
+            .all(entities.map((entity) => this.validateEntity(entity)))
+            .then(res => this.adapter.insertMany(res))
         }
       },
       update: {
@@ -504,7 +498,7 @@ module.exports = () => {
             }).catch(error => {
               setTimeout(() => {
                 self.log.info('Connection error', error)
-                self.log.info('reconnecting...')
+                self.log.info('Trying to reconnect...')
                 connecting()
               }, 2000)
             })
@@ -512,10 +506,11 @@ module.exports = () => {
           connecting()
         })
       }
+
       return Promise.reject(new Error('Please set the database adapter in schema!'))
     },
     stopped () {
-      this.disconnect()
+      return this.disconnect()
     }
   }
 }
