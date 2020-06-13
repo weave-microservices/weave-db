@@ -3,11 +3,11 @@
  * -----
  * Copyright 2019 Fachwerk
  */
-
-const NeDB = require('nedb-core')
+const AdapterBase = require('./adapter-base')
+const NeDB = require('nedb')
 
 function WeaveDbAdapter (options = {}) {
-  return {
+  return Object.assign(AdapterBase(), {
     init (broker, service) {
       if (!service.schema.collectionName) {
         throw new Error('Collection name is missing!')
@@ -126,7 +126,7 @@ function WeaveDbAdapter (options = {}) {
     entityToObject (doc) {
       return doc
     }
-  }
+  })
 }
 
 module.exports = WeaveDbAdapter

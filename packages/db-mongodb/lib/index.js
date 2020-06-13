@@ -4,6 +4,7 @@
  * Copyright 2020 Fachwerk
  */
 
+const { AdapterBase } = require('@weave-js/db')
 const { MongoClient, ObjectID } = require('mongodb')
 
 function MongoDbAdapter (options) {
@@ -14,7 +15,7 @@ function MongoDbAdapter (options) {
     }
   }, options)
 
-  return {
+  return Object.assign(AdapterBase(), {
     init (broker, service) {
       if (!service.schema.collectionName) {
         throw new Error('Collection name is missing!')
@@ -98,7 +99,7 @@ function MongoDbAdapter (options) {
         const stream = cursor.stream()
 
         if (params.asStream === true) {
-          return stream
+          resolve(stream)
         } else {
           stream.on('data', (data) => {
             buffer.push(data)
@@ -113,6 +114,9 @@ function MongoDbAdapter (options) {
           })
         }
       })
+    },
+    findAsStream (query, options) {
+      return this.find({ asStream: true, query, ...options })
     },
     updateById (id, entity) {
       return this.collection
@@ -149,7 +153,7 @@ function MongoDbAdapter (options) {
       }
       return value
     }
-  }
+  })
 }
 
 module.exports = MongoDbAdapter

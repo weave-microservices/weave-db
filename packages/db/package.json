@@ -19,14 +19,14 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@weave-js/core": "^0.7.0-rc.15"
+    "@weave-js/core": "0.7.0-rc.22"
   },
   "dependencies": {
     "fachwork": "0.0.10",
-    "nedb-core": "^3.0.6"
+    "nedb": "^1.8.0"
   },
   "devDependencies": {
-    "@weave-js/core": "^0.7.0-rc.15",
+    "@weave-js/core": "0.7.0-rc.22",
     "eslint": "^6.8.0",
     "eslint-config-fw": "^1.0.3",
     "eslint-loader": "^3.0.3",
