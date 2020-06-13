@@ -1,6 +1,6 @@
 {
   "name": "@weave-js/db-mongodb",
-  "version": "0.7.0-rc.3",
+  "version": "0.7.0-rc.4",
   "description": "MongoDb native adapter for weave db mixin.",
   "main": "lib/index.js",
   "scripts": {
@@ -24,7 +24,7 @@
     "jest": "^25.1.0"
   },
   "dependencies": {
-    "@weave-js/db": "^0.7.0-rc.5",
+    "@weave-js/db": "^0.7.0-rc.6",
     "mongodb": "^3.5.4"
   },
   "gitHead": "157d0239e764a8138d7cdce28793f39859d2a353"

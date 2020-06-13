@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.7.0-rc.6](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.5...@weave-js/db@0.7.0-rc.6) (2020-06-13)
+
+**Note:** Version bump only for package @weave-js/db
+
+
+
+
+
 # [0.7.0-rc.5](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.4...@weave-js/db@0.7.0-rc.5) (2020-04-23)
 
 **Note:** Version bump only for package @weave-js/db
