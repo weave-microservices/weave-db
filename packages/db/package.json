@@ -6,6 +6,7 @@
   "scripts": {
     "ci": "jest --watch",
     "test": "jest --no-cache",
+    "coverage": "jest --coverage --no-cache",
     "lint": "eslint --ext=.js lib test --fix"
   },
   "publishConfig": {

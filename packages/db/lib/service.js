@@ -56,9 +56,7 @@ module.exports = () => {
        *
        * @actions
        * @cached
-       *
        * @param {Object} query - Query object. Passes to adapter.
-       *
        * @returns {Number} List of found entities.
       */
       get: {
@@ -216,6 +214,7 @@ module.exports = () => {
           return Promise
             .all(entities.map((entity) => this.validateEntity(entity)))
             .then(res => this.adapter.insertMany(res))
+            .then(data => this.entityChanged('Inserted', data, context).then(() => data))
         }
       },
       update: {
@@ -231,6 +230,7 @@ module.exports = () => {
               if (!doc) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
+
               return this.transformDocuments(context, context.params, doc)
             })
             .then(data => this.entityChanged('Updated', data, context).then(() => data))
@@ -307,6 +307,7 @@ module.exports = () => {
           if (!sanitizedParams.pageSize) {
             sanitizedParams.pageSize = this.settings.pageSize
           }
+
           sanitizedParams.limit = sanitizedParams.pageSize
           sanitizedParams.offset = (sanitizedParams.page - 1) * sanitizedParams.pageSize
         }
@@ -376,6 +377,7 @@ module.exports = () => {
             if (key.includes('.')) {
               return key.split('.').reduce((obj, i) => obj[i], object)
             }
+
             return object[key]
           }
 
@@ -407,13 +409,15 @@ module.exports = () => {
               id: idList,
               mapIds: true
             }, rule.params || {})
+
             promises.push(context.call(rule.action, params).then(transformResponse))
           }
         })
 
-        return Promise.all(promises).then(() => {
-          return docs
-        })
+        return Promise.all(promises)
+          .then(() => {
+            return docs
+          })
       },
       filterFields (docs, fields) {
         return Promise.resolve(docs)
@@ -422,6 +426,7 @@ module.exports = () => {
               if (Array.isArray(docs)) {
                 return docs.map((entity) => {
                   const result = {}
+
                   fields.forEach(field => (result[field] = entity[field]))
 
                   if (Object.keys(result).length > 0) {
@@ -430,38 +435,48 @@ module.exports = () => {
                 })
               } else {
                 const result = {}
+
                 fields.forEach(field => (result[field] = docs[field]))
+
                 if (Object.keys(result).length > 0) {
                   return result
                 }
               }
             }
+
             return docs
           })
       },
       entityChanged (type, data, context) {
         this.log.debug('Document changed')
+
         return this.clearCache().then(() => {
-          const eventName = `doc${type}`
-          if (isFunction(this.schema[eventName])) {
-            this.schema[eventName].call(this, data, context)
+          const hookName = `doc${type}`
+
+          if (isFunction(this.schema[hookName]) && !context.options.suppressHook) {
+            this.schema[hookName].call(this, data, context)
           }
+
           return Promise.resolve()
         })
       },
       clearCache () {
         this.log.debug(`Clear cache for service: ${this.name}`)
         this.broker.broadcast(`$cache.clear.${this.name}`)
+
         if (this.broker.cache) {
           return this.broker.cache.clear(`${this.name}.*`)
         }
+
         return Promise.resolve()
       },
       validateEntity (entity) {
         if (!isFunction(this.settings.entityValidator)) {
           return Promise.resolve(entity)
         }
+
         const entities = Array.isArray(entity) ? entity : [entity]
+
         return Promise.all(entities.map(ent => this.settings.entityValidator(ent))).then(() => entity)
       }
     },
@@ -473,16 +488,19 @@ module.exports = () => {
       }
 
       this.adapter.init(this.broker, this)
-      this.log.debug(`Weave db module initialized for service "${this.name}"`)
+      this.log.debug(`Weave Database module initialized for service "${this.name}"`)
 
       // entity validation
       if (this.broker.validator && this.settings.entityValidator) {
         const check = this.broker.validator.compile(this.settings.entityValidator)
+
         this.settings.entityValidator = entity => {
           const result = check(entity)
+
           if (result === true) {
             return Promise.resolve()
           }
+
           return Promise.reject(new WeaveParameterValidationError('Entity validation error!', result))
         }
       }
@@ -493,15 +511,16 @@ module.exports = () => {
         const self = this
         return new Promise(resolve => {
           const connecting = () => {
-            this.connect().then((adapterResult) => {
-              resolve(adapterResult)
-            }).catch(error => {
-              setTimeout(() => {
-                self.log.info('Connection error', error)
-                self.log.info('Trying to reconnect...')
-                connecting()
-              }, 2000)
-            })
+            this.connect()
+              .then((adapterResult) => {
+                resolve(adapterResult)
+              }).catch(error => {
+                setTimeout(() => {
+                  self.log.info('Connection error', error)
+                  self.log.info('Trying to reconnect...')
+                  connecting()
+                }, 2000)
+              })
           }
           connecting()
         })

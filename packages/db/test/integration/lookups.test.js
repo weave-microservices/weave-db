@@ -1,5 +1,5 @@
 const { Weave } = require('@weave-js/core')
-const DbService = require('../../lib/index')
+const { DbService } = require('../../lib/index')
 require('../setup')
 
 const threads = [
