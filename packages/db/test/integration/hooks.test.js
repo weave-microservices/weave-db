@@ -2,14 +2,13 @@ const { Weave, Errors } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
 const DbAdapter = require('../../lib/nedb-adapter')
 const { DocumentNotFoundError } = require('../../lib/errors')
-require('../setup')
+require('../setup')('hooks')
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
   { name: 'Weave_doc.pdf', content: 'Weave documentation file', size: 220 },
   { name: 'WeaveLogo.jpeg', content: null, size: 344 },
-  { name: 'Blabla.pdf', content: 'Blabla', size: 566 },
-  { name: 'Blabla2.pdf', content: 'Blabla2', size: 566 }
+  { name: 'Blabla.pdf', content: 'Blabla', size: 566 }
 ]
 
 const equalAtLeast = (obj, origin) => {
@@ -28,8 +27,8 @@ describe('db-service CRUD methods', () => {
     name: 'test',
     mixins: DbService(),
     adapter: DbAdapter(),
-    collectionName: 'test',
-    docInserted () {
+    collectionName: 'hooks_test',
+    docInserted (doc, a) {
       flow.push('inserted')
     },
     docUpdated () {
@@ -60,18 +59,6 @@ describe('db-service CRUD methods', () => {
         docs[0]._id = result._id
         equalAtLeast(result, docs[0])
         expect(flow.join(',')).toBe('inserted')
-        done()
-      })
-  })
-
-  it('should insert a new doc and don´t fire hook, (done)', (done) => {
-    broker.call('test.insert', { entity: docs[4] }, { suppressHook: true })
-      .then(result => {
-        expect(result).toBeDefined()
-        expect(result._id).toBeDefined()
-        docs[0]._id = result._id
-        equalAtLeast(result, docs[4])
-        expect(flow.join(',')).toBe('')
         done()
       })
   })
@@ -174,9 +161,9 @@ describe('db-service CRUD methods', () => {
       .then(results => {
         expect(results.page).toBe(1)
         expect(results.pageSize).toBe(10)
-        expect(results.rows.length).toBe(5)
+        expect(results.rows.length).toBe(4)
         expect(results.totalPages).toBe(1)
-        expect(results.totalRows).toBe(5)
+        expect(results.totalRows).toBe(4)
         done()
       })
   })

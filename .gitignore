@@ -5,3 +5,4 @@ threads.db
 users.db
 packages/db/.vscode
 lerna-debug.log
+packages/db/lib/coverage

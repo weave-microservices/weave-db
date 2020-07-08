@@ -13,9 +13,7 @@ const NeDbAdapter = require('./nedb-adapter')
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors')
 const { DocumentNotFoundError } = require('./errors')
 
-const flattenDeep = arr => {
-  return arr.reduce((acc, e) => Array.isArray(e) ? acc.concat(flattenDeep(e)) : acc.concat(e), [])
-}
+const flattenDeep = arr => arr.reduce((acc, e) => Array.isArray(e) ? acc.concat(flattenDeep(e)) : acc.concat(e), [])
 
 module.exports = () => {
   return {
@@ -109,6 +107,7 @@ module.exports = () => {
         },
         handler (context) {
           const params = this.sanitizeParams(context, context.params)
+
           return this.adapter.find(params)
             .then(docs => this.transformDocuments(context, params, docs))
         }
@@ -174,7 +173,7 @@ module.exports = () => {
 
           return Promise.all([this.adapter.find(params), this.adapter.count(countParams)])
             .then(results => this.transformDocuments(context, params, results[0])
-              .then((doc) => {
+              .then(doc => {
                 return {
                   rows: doc,
                   totalRows: results[1],
@@ -211,8 +210,8 @@ module.exports = () => {
         },
         handler (context) {
           const { entities } = context.params
-          return Promise
-            .all(entities.map((entity) => this.validateEntity(entity)))
+
+          return Promise.all(entities.map((entity) => this.validateEntity(entity)))
             .then(res => this.adapter.insertMany(res))
             .then(data => this.entityChanged('Inserted', data, context).then(() => data))
         }
@@ -247,6 +246,7 @@ module.exports = () => {
               if (!doc) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
+
               return this.transformDocuments(context, context.params, doc)
                 .then(data => this.entityChanged('Removed', data, context).then(() => data))
             })
@@ -453,7 +453,7 @@ module.exports = () => {
         return this.clearCache().then(() => {
           const hookName = `doc${type}`
 
-          if (isFunction(this.schema[hookName]) && !context.options.suppressHook) {
+          if (isFunction(this.schema[hookName])) {
             this.schema[hookName].call(this, data, context)
           }
 

@@ -2,7 +2,7 @@ const { Weave, Errors } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
 const DbAdapter = require('../../lib/nedb-adapter')
 const { DocumentNotFoundError } = require('../../lib/errors')
-require('../setup')
+require('../setup')('crud')
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -21,11 +21,12 @@ describe('db-service CRUD methods', () => {
   const broker = Weave({
     logLevel: 'error'
   })
+
   broker.createService({
     name: 'test',
     mixins: DbService(),
     adapter: DbAdapter(),
-    collectionName: 'test',
+    collectionName: 'crud_test',
     settings: {
       // fields: ['id', 'name']
     }
@@ -79,6 +80,13 @@ describe('db-service CRUD methods', () => {
       })
   })
 
+  it('should return the number of docs and ignore limit and offset.', () => {
+    return broker.call('test.count', { limit: 1, offset: 1 })
+      .then(result => {
+        expect(result).toBeGreaterThanOrEqual(4)
+      })
+  })
+
   it('should return the number of docs by condition.', () => {
     return broker.call('test.count', { query: { _id: docs[0]._id }})
       .then(result => {
@@ -117,6 +125,14 @@ describe('db-service CRUD methods', () => {
       })
       .catch(error => {
         expect(error).toBeInstanceOf(DocumentNotFoundError)
+      })
+  })
+
+  it('should find docs by query.', () => {
+    return broker.call('test.findStream', { query: { _id: docs[1]._id }})
+      .catch(error => {
+        expect(error).toBeInstanceOf(Error)
+        expect(error.message).toBe('Method not implemented.')
       })
   })
 

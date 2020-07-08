@@ -1,6 +1,6 @@
 const { Weave } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
-require('../setup')
+require('../setup')('lookups')
 
 const threads = [
   { title: 'How to use weave?', content: 'Hello World', clicks: 2 },
@@ -29,7 +29,7 @@ describe.only('db-service populates test', () => {
   broker.createService({
     name: 'thread',
     mixins: DbService(),
-    collectionName: 'threads',
+    collectionName: 'lookups_threads',
     settings: {
       fields: ['_id', 'title', 'content', 'clicks', 'author'],
       lookups: {
@@ -41,7 +41,7 @@ describe.only('db-service populates test', () => {
   broker.createService({
     name: 'user',
     mixins: DbService(),
-    collectionName: 'users',
+    collectionName: 'lookups_users',
     settings: {
       fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
       lookups: {
@@ -58,6 +58,7 @@ describe.only('db-service populates test', () => {
       }
     }
   })
+
   beforeAll(() => {
     return broker.start().then(() => {
       return broker.call('user.insertMany', { entities: users }).then(results => {
