@@ -51,7 +51,6 @@ module.exports = () => {
       },
       /**
        * Get entity by id.
-       *
        * @actions
        * @cached
        * @param {Object} query - Query object. Passes to adapter.
@@ -75,7 +74,6 @@ module.exports = () => {
               if (!docs) {
                 return Promise.reject(new DocumentNotFoundError(params.id))
               }
-
               return this.transformDocuments(context, params, docs)
             })
             .then(docs => {
@@ -452,11 +450,9 @@ module.exports = () => {
 
         return this.clearCache().then(() => {
           const hookName = `doc${type}`
-
           if (isFunction(this.schema[hookName])) {
             this.schema[hookName].call(this, data, context)
           }
-
           return Promise.resolve()
         })
       },
