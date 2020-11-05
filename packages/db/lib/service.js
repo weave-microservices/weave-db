@@ -36,17 +36,17 @@ module.exports = () => {
           query: { type: 'any', optional: true }
         },
         handler (context) {
-          const params = this.sanitizeParams(context, context.params)
+          const data = this.sanitizeParams(context, context.data)
 
-          if (params.limit) {
-            params.limit = null
+          if (data.limit) {
+            data.limit = null
           }
 
-          if (params.offset) {
-            params.offset = null
+          if (data.offset) {
+            data.offset = null
           }
 
-          return this.adapter.count(params)
+          return this.adapter.count(data)
         }
       },
       /**
@@ -68,18 +68,18 @@ module.exports = () => {
           mapIds: { type: 'boolean', optional: true }
         },
         handler (context) {
-          const params = this.sanitizeParams(context, context.params)
+          const data = this.sanitizeParams(context, context.data)
 
-          return this.getById(params.id)
+          return this.getById(data.id)
             .then(docs => {
               if (!docs) {
-                return Promise.reject(new DocumentNotFoundError(params.id))
+                return Promise.reject(new DocumentNotFoundError(data.id))
               }
 
-              return this.transformDocuments(context, params, docs)
+              return this.transformDocuments(context, data, docs)
             })
             .then(docs => {
-              if (Array.isArray(docs) && params.mapIds) {
+              if (Array.isArray(docs) && data.mapIds) {
                 const result = {}
 
                 docs.forEach(doc => {
@@ -106,10 +106,10 @@ module.exports = () => {
           offset: { type: 'number', optional: true, convert: true }
         },
         handler (context) {
-          const params = this.sanitizeParams(context, context.params)
+          const data = this.sanitizeParams(context, context.data)
 
-          return this.adapter.find(params)
-            .then(docs => this.transformDocuments(context, params, docs))
+          return this.adapter.find(data)
+            .then(docs => this.transformDocuments(context, data, docs))
         }
       },
       findOne: {
@@ -123,11 +123,11 @@ module.exports = () => {
         },
         handler (context) {
           // sanitize the given parameters
-          const params = this.sanitizeParams(context, context.params)
+          const data = this.sanitizeParams(context, context.data)
 
           // send params to the adapter
-          return this.adapter.findOne(params.query)
-            .then(doc => this.transformDocuments(context, params, doc))
+          return this.adapter.findOne(data.query)
+            .then(doc => this.transformDocuments(context, data, doc))
         }
       },
       /**
@@ -159,8 +159,8 @@ module.exports = () => {
           pageSize: { type: 'number', optional: true, convert: true }
         },
         handler (context) {
-          const params = this.sanitizeParams(context, context.params)
-          const countParams = Object.assign({}, params)
+          const data = this.sanitizeParams(context, context.data)
+          const countParams = Object.assign({}, data)
 
           // Remove params for count action
           if (countParams.limit) {
@@ -171,15 +171,15 @@ module.exports = () => {
             countParams.offset = null
           }
 
-          return Promise.all([this.adapter.find(params), this.adapter.count(countParams)])
-            .then(results => this.transformDocuments(context, params, results[0])
+          return Promise.all([this.adapter.find(data), this.adapter.count(countParams)])
+            .then(results => this.transformDocuments(context, data, results[0])
               .then(doc => {
                 return {
                   rows: doc,
                   totalRows: results[1],
-                  page: params.page,
-                  pageSize: params.pageSize,
-                  totalPages: Math.floor((results[1] + params.pageSize - 1) / params.pageSize)
+                  page: data.page,
+                  pageSize: data.pageSize,
+                  totalPages: Math.floor((results[1] + data.pageSize - 1) / data.pageSize)
                 }
               }))
         }
@@ -190,7 +190,7 @@ module.exports = () => {
           filterOptions: { type: 'object', optional: true }
         },
         handler (context) {
-          return this.adapter.findAsStream(context.params.query, context.params.filterOptions)
+          return this.adapter.findAsStream(context.data.query, context.data.filterOptions)
         }
       },
       insert: {
@@ -198,7 +198,7 @@ module.exports = () => {
           entity: { type: 'any' }
         },
         handler (context) {
-          const { entity } = context.params
+          const { entity } = context.data
           return this.validateEntity(entity)
             .then(entity => this.adapter.insert(entity))
             .then(data => this.entityChanged('Inserted', data, context).then(() => data))
@@ -209,7 +209,7 @@ module.exports = () => {
           entities: { type: 'array', itemType: { type: 'any' }}
         },
         handler (context) {
-          const { entities } = context.params
+          const { entities } = context.data
 
           return Promise.all(entities.map((entity) => this.validateEntity(entity)))
             .then(res => this.adapter.insertMany(res))
@@ -223,14 +223,14 @@ module.exports = () => {
           options: { type: 'object', optional: true }
         },
         handler (context) {
-          const { id, entity } = context.params
+          const { id, entity } = context.data
           return this.adapter.updateById(id, entity)
             .then(doc => {
               if (!doc) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
 
-              return this.transformDocuments(context, context.params, doc)
+              return this.transformDocuments(context, context.data, doc)
             })
             .then(data => this.entityChanged('Updated', data, context).then(() => data))
         }
@@ -240,14 +240,14 @@ module.exports = () => {
           id: { type: 'any' }
         },
         handler (context) {
-          const { id } = context.params
+          const { id } = context.data
           return this.adapter.removeById(id)
             .then(doc => {
               if (!doc) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
 
-              return this.transformDocuments(context, context.params, doc)
+              return this.transformDocuments(context, context.data, doc)
                 .then(data => this.entityChanged('Removed', data, context).then(() => data))
             })
         }
@@ -269,50 +269,50 @@ module.exports = () => {
       disconnect () {
         return this.adapter.disconnect()
       },
-      sanitizeParams (context, params) {
-        const sanitizedParams = Object.assign({}, params)
+      sanitizeParams (context, data) {
+        const sanitizedData = Object.assign({}, data)
 
-        if (typeof sanitizedParams.limit === 'string') {
-          sanitizedParams.limit = Number(sanitizedParams.limit)
+        if (typeof sanitizedData.limit === 'string') {
+          sanitizedData.limit = Number(sanitizedData.limit)
         }
 
-        if (typeof sanitizedParams.offset === 'string') {
-          sanitizedParams.offset = Number(sanitizedParams.offset)
+        if (typeof sanitizedData.offset === 'string') {
+          sanitizedData.offset = Number(sanitizedData.offset)
         }
 
-        if (typeof sanitizedParams.page === 'string') {
-          sanitizedParams.page = Number(sanitizedParams.page)
+        if (typeof sanitizedData.page === 'string') {
+          sanitizedData.page = Number(sanitizedData.page)
         }
 
-        if (typeof sanitizedParams.pageSize === 'string') {
-          sanitizedParams.pageSize = Number(sanitizedParams.pageSize)
+        if (typeof sanitizedData.pageSize === 'string') {
+          sanitizedData.pageSize = Number(sanitizedData.pageSize)
         }
 
-        if (typeof sanitizedParams.lookup === 'string') {
-          sanitizedParams.lookup = sanitizedParams.lookup.split(' ')
+        if (typeof sanitizedData.lookup === 'string') {
+          sanitizedData.lookup = sanitizedData.lookup.split(' ')
         }
 
         // If we use ID mapping and want only specific fields, we need to add the id field to the fieldlist.
-        if (sanitizedParams.mapIds === true) {
-          if (Array.isArray(sanitizedParams.fields) > 0 && !sanitizedParams.fields.includes(this.settings.idFieldName)) {
-            sanitizedParams.fields.push(this.settings.idFieldName)
+        if (sanitizedData.mapIds === true) {
+          if (Array.isArray(sanitizedData.fields) > 0 && !sanitizedData.fields.includes(this.settings.idFieldName)) {
+            sanitizedData.fields.push(this.settings.idFieldName)
           }
         }
 
         if (context.action.name.endsWith('.list')) {
-          if (!sanitizedParams.page) {
-            sanitizedParams.page = 1
+          if (!sanitizedData.page) {
+            sanitizedData.page = 1
           }
 
-          if (!sanitizedParams.pageSize) {
-            sanitizedParams.pageSize = this.settings.pageSize
+          if (!sanitizedData.pageSize) {
+            sanitizedData.pageSize = this.settings.pageSize
           }
 
-          sanitizedParams.limit = sanitizedParams.pageSize
-          sanitizedParams.offset = (sanitizedParams.page - 1) * sanitizedParams.pageSize
+          sanitizedData.limit = sanitizedData.pageSize
+          sanitizedData.offset = (sanitizedData.page - 1) * sanitizedData.pageSize
         }
 
-        return sanitizedParams
+        return sanitizedData
       },
       getById (id) { // by ids
         return Promise.resolve(id)
@@ -324,7 +324,7 @@ module.exports = () => {
             return this.adapter.findById(id)
           })
       },
-      transformDocuments (context, params, docs) {
+      transformDocuments (context, data, docs) {
         let isDoc = false
 
         // if docs is a single doc - wrap it in an array
@@ -339,8 +339,8 @@ module.exports = () => {
 
         return Promise.resolve(docs)
           .then(docs => docs.map(doc => this.adapter.entityToObject(doc)))
-          .then(json => params.lookup ? this.lookupDocs(context, json, params.lookup) : json)
-          .then(json => this.filterFields(json, params.fields ? params.fields : this.settings.fields))
+          .then(json => data.lookup ? this.lookupDocs(context, json, data.lookup) : json)
+          .then(json => this.filterFields(json, data.fields ? data.fields : this.settings.fields))
           .then(json => isDoc ? json[0] : json)
       },
       lookupDocs (context, docs, lookupFields) {
@@ -405,12 +405,12 @@ module.exports = () => {
 
             promises.push(ruleResult)
           } else {
-            const params = Object.assign({
+            const data = Object.assign({
               id: idList,
               mapIds: true
-            }, rule.params || {})
+            }, rule.data || {})
 
-            promises.push(context.call(rule.action, params).then(transformResponse))
+            promises.push(context.call(rule.action, data).then(transformResponse))
           }
         })
 

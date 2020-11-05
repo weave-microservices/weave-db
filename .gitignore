@@ -1,8 +1,5 @@
-packages/db/test.db
 node_modules*
-test.db
-threads.db
-users.db
+*.db
 packages/db/.vscode
 lerna-debug.log
 packages/db/lib/coverage

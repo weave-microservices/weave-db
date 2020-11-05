@@ -17,15 +17,15 @@
   },
   "license": "MIT",
   "dependencies": {
-    "mysql2": "^2.0.0",
-    "sequelize": "^5.21.2"
+    "mysql2": "^2.2.5",
+    "sequelize": "^6.3.5"
   },
   "devDependencies": {
-    "eslint": "^6.6.0",
+    "eslint": "^7.11.0",
     "eslint-config-fw": "^1.0.3",
-    "eslint-loader": "^3.0.2",
+    "eslint-loader": "^4.0.2",
     "istanbul": "^0.4.5",
-    "jest": "^24.9.0"
+    "jest": "^26.6.0"
   },
   "gitHead": "cdd9762d78d076dc7bdfa0784cdc9ce6af6a57c3"
 }
