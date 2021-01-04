@@ -3,3 +3,4 @@ node_modules*
 packages/db/.vscode
 lerna-debug.log
 packages/db/lib/coverage
+*.db
