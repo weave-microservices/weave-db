@@ -9,7 +9,7 @@ const op = Sequelize.Op
 
 module.exports = (...options) => {
   return {
-    init (weave, service) {
+    init (broker, service) {
       if (!service.schema.model) {
         throw new Error('Model not defined!')
       }
@@ -22,9 +22,10 @@ module.exports = (...options) => {
         throw new Error('Model needs a name!')
       }
 
+      this.broker = broker
       this.$service = service
       this.idFieldName = service.settings.idFieldName
-      this.log = weave.getLogger('Sequelize DB adapter')
+      this.log = broker.getLogger('Sequelize DB adapter')
     },
     connect () {
       this.db = new Sequelize(...options)
