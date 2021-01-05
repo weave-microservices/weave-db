@@ -84,14 +84,17 @@ function MongoDbAdapter (options) {
 
         let cursor = this.collection.find(query, params.projection)
 
+        // handle limit
         if (params.limit) {
           cursor = cursor.limit(Number(params.limit))
         }
 
+        // handle offset
         if (params.offset) {
           cursor = cursor.skip(params.offset)
         }
 
+        // Handle sort
         if (params.sort) {
           cursor = cursor.sort(params.sort)
         }
@@ -132,6 +135,11 @@ function MongoDbAdapter (options) {
         .findOneAndDelete({ [this.$idField]: this.stringToObjectID(id) })
         .then(result => result.value)
     },
+    clear () {
+      return this.collection
+        .deleteMany({})
+        .then(result => result.deletedCount)
+    },
     entityToObject (entity) {
       const data = Object.assign({}, entity)
 
@@ -148,7 +156,7 @@ function MongoDbAdapter (options) {
       return objectId
     },
     stringToObjectID (value) {
-      if (typeof value === 'string') {
+      if (typeof value === 'string' && ObjectID.isValid(value)) {
         return new ObjectID(value)
       }
       return value

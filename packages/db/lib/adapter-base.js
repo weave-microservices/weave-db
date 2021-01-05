@@ -37,6 +37,9 @@ module.exports = () => {
     removeById (id) {
       throw new Error('Method not implemented.')
     },
+    clear () {
+      throw new Error('Method not implemented.')
+    },
     entityToObject (doc) {
       throw new Error('Method not implemented.')
     },
