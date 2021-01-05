@@ -450,7 +450,7 @@ module.exports = () => {
         this.log.debug('Document changed')
 
         return this.clearCache().then(() => {
-          const hookName = `doc${type}`
+          const hookName = `entity${type}`
           if (isFunction(this.schema[hookName])) {
             this.schema[hookName].call(this, data, context)
           }
