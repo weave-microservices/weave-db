@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.1](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.8.0...@weave-js/db@0.8.1) (2021-01-07)
+
+
+### Bug Fixes
+
+* Added mixxing dependency to @weave-js/core ([74d1763](https://github.com/weave-microservices/weave-db/commit/74d176374669407f0502ff84d5b85dda2f7b3458))
+
+
+
+
+
 # [0.8.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.7.0-rc.6...@weave-js/db@0.8.0) (2021-01-07)
 
 
