@@ -4,7 +4,7 @@ module.exports = filePrefix => {
   // delete db files after testing
   afterAll(() => {
     try {
-      const files = ['test.db', 'threads.db', 'users.db']
+      const files = ['test.db', 'threads.db', 'users.db', 'files.db']
       files.forEach(file => fs.unlink(path.join(__dirname, '..', `${filePrefix}_${file}`), () => {}))
     } catch (e) {}
   })

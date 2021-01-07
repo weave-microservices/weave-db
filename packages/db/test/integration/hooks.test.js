@@ -20,7 +20,9 @@ const equalAtLeast = (obj, origin) => {
 describe('db-service CRUD methods', () => {
   let flow = []
   const broker = Weave({
-    logLevel: 'error'
+    logger: {
+      enabled: false
+    }
   })
 
   broker.createService({
@@ -28,13 +30,13 @@ describe('db-service CRUD methods', () => {
     mixins: DbService(),
     adapter: DbAdapter(),
     collectionName: 'hooks_test',
-    docInserted (doc, a) {
+    entityInserted (doc, a) {
       flow.push('inserted')
     },
-    docUpdated () {
+    entityUpdated () {
       flow.push('updated')
     },
-    docRemoved () {
+    entityRemoved () {
       flow.push('removed')
     }
   })

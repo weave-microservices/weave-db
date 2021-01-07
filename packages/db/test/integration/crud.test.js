@@ -19,7 +19,9 @@ const equalAtLeast = (obj, origin) => {
 
 describe('db-service CRUD methods', () => {
   const broker = Weave({
-    logLevel: 'error'
+    logger: {
+      enabled: false
+    }
   })
 
   broker.createService({

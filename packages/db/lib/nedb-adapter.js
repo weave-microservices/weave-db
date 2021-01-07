@@ -6,7 +6,7 @@
 const AdapterBase = require('./adapter-base')
 const NeDB = require('nedb')
 
-function WeaveDbAdapter (options = {}) {
+module.exports = (options) => {
   return Object.assign(AdapterBase(), {
     init (broker, service) {
       if (!service.schema.collectionName) {
@@ -46,11 +46,11 @@ function WeaveDbAdapter (options = {}) {
     },
     insert (entity) {
       return new Promise((resolve, reject) => {
-        return this.db.insert(entity, (error, newDoc) => {
+        return this.db.insert(entity, (error, newEntity) => {
           if (error) {
             return reject(error)
           }
-          return resolve(newDoc)
+          return resolve(newEntity)
         })
       })
     },
@@ -59,21 +59,21 @@ function WeaveDbAdapter (options = {}) {
     },
     findById (id) {
       return new Promise((resolve, reject) => {
-        this.db.findOne({ [this.$idFieldName]: id }).exec((error, doc) => {
+        this.db.findOne({ [this.$idFieldName]: id }).exec((error, entity) => {
           if (error) {
             return reject(error)
           }
-          return resolve(doc)
+          return resolve(entity)
         })
       })
     },
     findByIds (ids) {
       return new Promise((resolve, reject) => {
-        this.db.find({ [this.$idFieldName]: { $in: ids }}).exec((error, docs) => {
+        this.db.find({ [this.$idFieldName]: { $in: ids }}).exec((error, entities) => {
           if (error) {
             return reject(error)
           }
-          return resolve(docs)
+          return resolve(entities)
         })
       })
     },
@@ -82,10 +82,6 @@ function WeaveDbAdapter (options = {}) {
         const query = params.query || {}
 
         let q = this.db.find(query)
-
-        // if (query[this.$idFieldName]) {
-        //     query[this.$idField] = stringToObjectID(query[this.$idField])
-        // }
 
         if (params.limit) {
           q = q.limit(Number(params.limit))
@@ -99,21 +95,21 @@ function WeaveDbAdapter (options = {}) {
           q = q.sort(params.sort)
         }
 
-        q.exec((error, docs) => {
+        q.exec((error, entities) => {
           if (error) {
             return reject(error)
           }
-          return resolve(docs)
+          return resolve(entities)
         })
       })
     },
     findOne (query) {
       return new Promise((resolve, reject) => {
-        this.db.findOne(query).exec((error, docs) => {
+        this.db.findOne(query).exec((error, entities) => {
           if (error) {
             return reject(error)
           }
-          return resolve(docs)
+          return resolve(entities)
         })
       })
     },
@@ -123,10 +119,11 @@ function WeaveDbAdapter (options = {}) {
     removeById (id) {
       return this.db.remove({ id }).write()
     },
-    entityToObject (doc) {
-      return doc
+    clear () {
+      return this.db.remove({}).write()
+    },
+    entityToObject (entity) {
+      return entity
     }
   })
 }
-
-module.exports = WeaveDbAdapter

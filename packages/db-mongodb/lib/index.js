@@ -7,7 +7,7 @@
 const { AdapterBase } = require('@weave-js/db')
 const { MongoClient, ObjectID } = require('mongodb')
 
-function MongoDbAdapter (options) {
+module.exports = (options) => {
   options = Object.assign({
     transform: true,
     options: {
@@ -25,7 +25,7 @@ function MongoDbAdapter (options) {
       this.$collectionName = service.schema.collectionName
       this.$idField = service.schema.settings.idFieldName || '_id'
 
-      this.log = broker.createLogger('MONGODB_ADAPTER')
+      this.log = broker.createLogger('MONGODB ADAPTER')
     },
     connect () {
       return MongoClient.connect(options.url, options.options).then(client => {
@@ -163,5 +163,3 @@ function MongoDbAdapter (options) {
     }
   })
 }
-
-module.exports = MongoDbAdapter

@@ -5,15 +5,40 @@
  */
 
 // npm packages
-const { isFunction, isObject } = require('lodash')
-const { promisify } = require('fachwork')
+const { promisify, isFunction, isObject, dotGet } = require('@weave-js/utils')
 
 // own modules
 const NeDbAdapter = require('./nedb-adapter')
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors')
 const { DocumentNotFoundError } = require('./errors')
 
+// todo: Move to @weave-js/utils
 const flattenDeep = arr => arr.reduce((acc, e) => Array.isArray(e) ? acc.concat(flattenDeep(e)) : acc.concat(e), [])
+
+// todo: Move to @weave-js/utils
+const dotSet = (object, key, value) => {
+  if (key.includes('.')) {
+    const pathArray = key.split('.')
+    return pathArray.reduce((obj, i, index) => {
+      const isTargetProp = (index + 1) === pathArray.length
+      const currentIsOject = isObject(obj[i])
+
+      if (obj[i] === undefined && !isTargetProp) {
+        obj[i] = {}
+      } else if (!isTargetProp && currentIsOject) {
+        return obj[i]
+      } else if (isTargetProp) {
+        obj[i] = value
+      } else {
+        throw new Error(`The property "${i}" already exists and is not an object.`)
+      }
+      return obj[i]
+    }, object)
+  }
+
+  object[key] = value
+  return object
+}
 
 module.exports = () => {
   return {
@@ -70,25 +95,25 @@ module.exports = () => {
           const data = this.sanitizeParams(context, context.data)
 
           return this.getById(data.id)
-            .then(docs => {
-              if (!docs) {
+            .then(entities => {
+              if (!entities) {
                 return Promise.reject(new DocumentNotFoundError(data.id))
               }
 
-              return this.transformDocuments(context, data, docs)
+              return this.transformDocuments(context, data, entities)
             })
-            .then(docs => {
-              if (Array.isArray(docs) && data.mapIds) {
+            .then(entities => {
+              if (Array.isArray(entities) && data.mapIds) {
                 const result = {}
 
-                docs.forEach(doc => {
-                  result[doc[this.settings.idFieldName]] = doc
+                entities.forEach(entity => {
+                  result[entity[this.settings.idFieldName]] = entity
                 })
 
                 return result
               }
 
-              return docs
+              return entities
             })
         }
       },
@@ -108,7 +133,7 @@ module.exports = () => {
           const data = this.sanitizeParams(context, context.data)
 
           return this.adapter.find(data)
-            .then(docs => this.transformDocuments(context, data, docs))
+            .then(entities => this.transformDocuments(context, data, entities))
         }
       },
       findOne: {
@@ -126,7 +151,7 @@ module.exports = () => {
 
           // send params to the adapter
           return this.adapter.findOne(data.query)
-            .then(doc => this.transformDocuments(context, data, doc))
+            .then(entity => this.transformDocuments(context, data, entity))
         }
       },
       /**
@@ -172,9 +197,9 @@ module.exports = () => {
 
           return Promise.all([this.adapter.find(data), this.adapter.count(countParams)])
             .then(results => this.transformDocuments(context, data, results[0])
-              .then(doc => {
+              .then(entity => {
                 return {
-                  rows: doc,
+                  rows: entity,
                   totalRows: results[1],
                   page: data.page,
                   pageSize: data.pageSize,
@@ -224,12 +249,12 @@ module.exports = () => {
         handler (context) {
           const { id, entity } = context.data
           return this.adapter.updateById(id, entity)
-            .then(doc => {
-              if (!doc) {
+            .then(entity => {
+              if (!entity) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
 
-              return this.transformDocuments(context, context.data, doc)
+              return this.transformDocuments(context, context.data, entity)
             })
             .then(data => this.entityChanged('Updated', data, context).then(() => data))
         }
@@ -241,12 +266,12 @@ module.exports = () => {
         handler (context) {
           const { id } = context.data
           return this.adapter.removeById(id)
-            .then(doc => {
-              if (!doc) {
+            .then(entity => {
+              if (!entity) {
                 return Promise.reject(new DocumentNotFoundError(id))
               }
 
-              return this.transformDocuments(context, context.data, doc)
+              return this.transformDocuments(context, context.data, entity)
                 .then(data => this.entityChanged('Removed', data, context).then(() => data))
             })
         }
@@ -323,32 +348,32 @@ module.exports = () => {
             return this.adapter.findById(id)
           })
       },
-      transformDocuments (context, data, docs) {
-        let isDoc = false
+      transformDocuments (context, data, entities) {
+        let isEntity = false
 
-        // if docs is a single doc - wrap it in an array
-        if (!Array.isArray(docs)) {
-          if (isObject(docs)) {
-            isDoc = true
-            docs = [docs]
+        // if "docs" is a single object - wrap it in an array
+        if (!Array.isArray(entities)) {
+          if (isObject(entities)) {
+            isEntity = true
+            entities = [entities]
           } else {
-            return Promise.resolve(docs)
+            return Promise.resolve(entities)
           }
         }
 
-        return Promise.resolve(docs)
-          .then(docs => docs.map(doc => this.adapter.entityToObject(doc)))
+        return Promise.resolve(entities)
+          .then(entities => entities.map(entity => this.adapter.entityToObject(entity)))
           .then(json => data.lookup ? this.lookupDocs(context, json, data.lookup) : json)
           .then(json => this.filterFields(json, data.fields ? data.fields : this.settings.fields))
-          .then(json => isDoc ? json[0] : json)
+          .then(json => isEntity ? json[0] : json)
       },
-      lookupDocs (context, docs, lookupFields) {
+      lookupDocs (context, entities, lookupFields) {
         if (!this.settings.lookups || !Array.isArray(lookupFields) || lookupFields.length === 0) {
-          return Promise.resolve(docs)
+          return Promise.resolve(entities)
         }
 
-        if (docs === null || !isObject(docs) || !Array.isArray(docs)) {
-          return Promise.resolve(docs)
+        if (entities === null || !isObject(entities) || !Array.isArray(entities)) {
+          return Promise.resolve(entities)
         }
 
         const promises = []
@@ -372,25 +397,18 @@ module.exports = () => {
             }
           }
 
-          const getProperty = (object, key) => {
-            if (key.includes('.')) {
-              return key.split('.').reduce((obj, i) => obj[i], object)
-            }
-
-            return object[key]
-          }
-
-          const arr = Array.isArray(docs) ? docs : [docs]
-          const idList = flattenDeep(arr.map(doc => getProperty(doc, key)))
+          const arr = Array.isArray(entities) ? entities : [entities]
+          const idList = flattenDeep(arr.map(entity => dotGet(entity, key)))
 
           const transformResponse = lookedUpDocs => {
-            arr.forEach(doc => {
-              const id = doc[key]
+            arr.forEach(entity => {
+              const id = dotGet(entity, key)
 
               if (Array.isArray(id)) {
-                doc[key] = id.map(id => lookedUpDocs[id]).filter(Boolean)
+                dotSet(entity, key, id.map(id => lookedUpDocs[id]).filter(Boolean))
               } else {
-                doc[key] = lookedUpDocs === null ? null : lookedUpDocs[id]
+                const value = lookedUpDocs === null ? null : lookedUpDocs[id]
+                dotSet(entity, key, value)
               }
             })
           }
@@ -415,18 +433,18 @@ module.exports = () => {
 
         return Promise.all(promises)
           .then(() => {
-            return docs
+            return entities
           })
       },
-      filterFields (docs, fields) {
-        return Promise.resolve(docs)
-          .then((docs) => {
+      filterFields (entities, fields) {
+        return Promise.resolve(entities)
+          .then((entities) => {
             if (Array.isArray(fields)) {
-              if (Array.isArray(docs)) {
-                return docs.map((entity) => {
+              if (Array.isArray(entities)) {
+                return entities.map((entity) => {
                   const result = {}
 
-                  fields.forEach(field => (result[field] = entity[field]))
+                  fields.forEach(field => (dotSet(result, field, dotGet(entity, field))))
 
                   if (Object.keys(result).length > 0) {
                     return result
@@ -435,7 +453,7 @@ module.exports = () => {
               } else {
                 const result = {}
 
-                fields.forEach(field => (result[field] = docs[field]))
+                fields.forEach(field => (dotSet(result, field, dotGet(entities, field))))
 
                 if (Object.keys(result).length > 0) {
                   return result
@@ -443,11 +461,11 @@ module.exports = () => {
               }
             }
 
-            return docs
+            return entities
           })
       },
       entityChanged (type, data, context) {
-        this.log.debug('Document changed')
+        this.log.debug('Entity changed')
 
         return this.clearCache().then(() => {
           const hookName = `entity${type}`
