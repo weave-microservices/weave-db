@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.8.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.7.0-rc.4...@weave-js/db-mongodb@0.8.0) (2021-01-07)
+
+
+### Features
+
+* Added basic support for nested lookups: ([7be7b1f](https://github.com/weave-microservices/weave-db/commit/7be7b1f73940b300e95872e32a949544e1eb9765))
+
+
+
+
+
 # [0.7.0-rc.4](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.7.0-rc.3...@weave-js/db-mongodb@0.7.0-rc.4) (2020-06-13)
 
 **Note:** Version bump only for package @weave-js/db-mongodb
