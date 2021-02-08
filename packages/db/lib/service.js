@@ -5,40 +5,12 @@
  */
 
 // npm packages
-const { promisify, isFunction, isObject, dotGet } = require('@weave-js/utils')
+const { promisify, isFunction, isObject, dotGet, dotSet, flattenDeep } = require('@weave-js/utils')
 
 // own modules
 const NeDbAdapter = require('./nedb-adapter')
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors')
 const { DocumentNotFoundError } = require('./errors')
-
-// todo: Move to @weave-js/utils
-const flattenDeep = arr => arr.reduce((acc, e) => Array.isArray(e) ? acc.concat(flattenDeep(e)) : acc.concat(e), [])
-
-// todo: Move to @weave-js/utils
-const dotSet = (object, key, value) => {
-  if (key.includes('.')) {
-    const pathArray = key.split('.')
-    return pathArray.reduce((obj, i, index) => {
-      const isTargetProp = (index + 1) === pathArray.length
-      const currentIsOject = isObject(obj[i])
-
-      if (obj[i] === undefined && !isTargetProp) {
-        obj[i] = {}
-      } else if (!isTargetProp && currentIsOject) {
-        return obj[i]
-      } else if (isTargetProp) {
-        obj[i] = value
-      } else {
-        throw new Error(`The property "${i}" already exists and is not an object.`)
-      }
-      return obj[i]
-    }, object)
-  }
-
-  object[key] = value
-  return object
-}
 
 module.exports = () => {
   return {
@@ -47,8 +19,7 @@ module.exports = () => {
       pageSize: 10,
       maxPageSize: 1000,
       lookups: null,
-      fields: null,
-      entityValidatorSchema: null
+      fields: null
     },
     actions: {
       /**
@@ -486,13 +457,13 @@ module.exports = () => {
         return Promise.resolve()
       },
       validateEntity (entity) {
-        if (!isFunction(this.settings.entityValidator)) {
+        if (!isFunction(this.entityValidator)) {
           return Promise.resolve(entity)
         }
 
         const entities = Array.isArray(entity) ? entity : [entity]
 
-        return Promise.all(entities.map(ent => this.settings.entityValidator(ent))).then(() => entity)
+        return Promise.all(entities.map(e => this.entityValidator(e))).then(() => entity)
       }
     },
     created () {
@@ -505,11 +476,12 @@ module.exports = () => {
       this.adapter.init(this.broker, this)
       this.log.debug(`Weave Database module initialized for service "${this.name}"`)
 
-      // entity validation
-      if (this.broker.validator && this.settings.entityValidator) {
-        const check = this.broker.validator.compile(this.settings.entityValidator)
+      // Wrap up entity validation
+      if (this.broker.validator && this.schema.entitySchema && isObject(this.schema.entitySchema)) {
+        const check = this.broker.validator.compile(this.schema.entitySchema)
 
-        this.settings.entityValidator = entity => {
+        // wrap entity validator function and attach to service
+        this.entityValidator = (entity) => {
           const result = check(entity)
 
           if (result === true) {
