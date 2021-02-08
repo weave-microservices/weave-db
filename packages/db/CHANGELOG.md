@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.8.2](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.8.1...@weave-js/db@0.8.2) (2021-02-08)
+
+
+### Bug Fixes
+
+* Fixed entity validation ([a6a4679](https://github.com/weave-microservices/weave-db/commit/a6a467995e0a1598a5a4ac38745cd59228979b82))
+
+
+
+
+
 ## [0.8.1](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.8.0...@weave-js/db@0.8.1) (2021-01-07)
 
 
