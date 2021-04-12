@@ -448,10 +448,10 @@ module.exports = () => {
       },
       clearCache () {
         this.log.debug(`Clear cache for service: ${this.name}`)
-        this.broker.broadcast(`$cache.clear.${this.name}`)
+        this.runtime.eventBus.broadcast(`$cache.clear.${this.name}`)
 
-        if (this.broker.cache) {
-          return this.broker.cache.clear(`${this.name}.*`)
+        if (this.runtime.cache) {
+          return this.runtime.cache.clear(`${this.name}.*`)
         }
 
         return Promise.resolve()
@@ -477,8 +477,8 @@ module.exports = () => {
       this.log.debug(`Weave Database module initialized for service "${this.name}"`)
 
       // Wrap up entity validation
-      if (this.broker.validator && this.schema.entitySchema && isObject(this.schema.entitySchema)) {
-        const check = this.broker.validator.compile(this.schema.entitySchema)
+      if (this.runtime.validator && this.schema.entitySchema && isObject(this.schema.entitySchema)) {
+        const check = this.runtime.validator.compile(this.schema.entitySchema)
 
         // wrap entity validator function and attach to service
         this.entityValidator = (entity) => {
