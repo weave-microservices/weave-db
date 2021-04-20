@@ -396,7 +396,7 @@ module.exports = () => {
             const data = Object.assign({
               id: idList,
               mapIds: true
-            }, rule.data || {})
+            }, rule.params || {})
 
             promises.push(context.call(rule.action, data).then(transformResponse))
           }
@@ -436,7 +436,7 @@ module.exports = () => {
           })
       },
       entityChanged (type, data, context) {
-        this.log.debug('Entity changed')
+        this.log.verbose('Entity changed')
 
         return this.clearCache().then(() => {
           const hookName = `entity${type}`
@@ -447,7 +447,7 @@ module.exports = () => {
         })
       },
       clearCache () {
-        this.log.debug(`Clear cache for service: ${this.name}`)
+        this.log.verbose(`Clear cache for service: ${this.name}`)
         this.runtime.eventBus.broadcast(`$cache.clear.${this.name}`)
 
         if (this.runtime.cache) {
@@ -474,7 +474,7 @@ module.exports = () => {
       }
 
       this.adapter.init(this.broker, this)
-      this.log.debug(`Weave Database module initialized for service "${this.name}"`)
+      this.log.info(`Weave Database module initialized for service "${this.name}"`)
 
       // Wrap up entity validation
       if (this.runtime.validator && this.schema.entitySchema && isObject(this.schema.entitySchema)) {
@@ -503,7 +503,7 @@ module.exports = () => {
                 resolve(adapterResult)
               }).catch(error => {
                 setTimeout(() => {
-                  self.log.info('Connection error', error)
+                  self.log.error('Connection error', error)
                   self.log.info('Trying to reconnect...')
                   connecting()
                 }, 2000)
