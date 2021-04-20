@@ -20,7 +20,7 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@weave-js/core": ">=0.9.0"
+    "@weave-js/core": ">=0.9.0-beta.4"
   },
   "dependencies": {
     "@weave-js/core": "^0.9.0",
