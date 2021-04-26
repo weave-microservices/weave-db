@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0-beta.4](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.9.0-beta.3...@weave-js/db-mongodb@0.9.0-beta.4) (2021-04-26)
+
+**Note:** Version bump only for package @weave-js/db-mongodb
+
+
+
+
+
 # [0.9.0-beta.3](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-mongodb@0.9.0-beta.2...@weave-js/db-mongodb@0.9.0-beta.3) (2021-04-20)
 
 **Note:** Version bump only for package @weave-js/db-mongodb
