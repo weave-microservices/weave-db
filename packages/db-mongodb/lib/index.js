@@ -82,7 +82,13 @@ module.exports = (options) => {
           query[this.$idField] = this.stringToObjectID(query[this.$idField])
         }
 
+        // Init cursor
         let cursor = this.collection.find(query, params.projection)
+
+        // handle projection
+        if (params.projection) {
+          cursor = cursor.project(params.projection)
+        }
 
         // handle limit
         if (params.limit) {
