@@ -1,6 +1,6 @@
 module.exports = {
   AdapterBase: require('./adapter-base'),
   DbService: require('./service'),
-  DefaultAdapter: require('./nedb-adapter'),
+  DefaultAdapter: require('./adapter'),
   Errors: require('./errors')
 }

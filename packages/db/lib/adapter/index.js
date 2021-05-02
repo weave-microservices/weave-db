@@ -3,7 +3,7 @@
  * -----
  * Copyright 2019 Fachwerk
  */
-const AdapterBase = require('./adapter-base')
+const AdapterBase = require('../adapter-base')
 const NeDB = require('nedb')
 
 module.exports = (options) => {

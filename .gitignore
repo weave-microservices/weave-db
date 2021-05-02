@@ -4,3 +4,4 @@ packages/db/.vscode
 lerna-debug.log
 packages/db/lib/coverage
 *.db
+*.DS_Store

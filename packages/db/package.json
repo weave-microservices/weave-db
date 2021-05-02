@@ -20,10 +20,10 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@weave-js/core": ">=0.9.0-beta.4"
+    "@weave-js/core": "^0.9.0-beta.8"
   },
   "dependencies": {
-    "@weave-js/core": "0.9.0-beta.4",
+    "@weave-js/core": "0.9.0-beta.8",
     "@weave-js/utils": "0.9.0-beta.2",
     "nedb": "^1.8.0"
   },

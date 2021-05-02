@@ -173,12 +173,13 @@ describe('db-service nested lookup test', () => {
     settings: {
       fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
       lookups: {
-        threads: function (context, docs, bla) {
+        threads: function (context, docs) {
           return Promise.all(
             docs.map(doc => {
               return context.call('thread.find', { query: { author: doc._id }, lookup: ['attachments.files'] })
                 .then(results => {
                   doc.threads = results
+                  doc
                 })
             })
           )
@@ -186,6 +187,7 @@ describe('db-service nested lookup test', () => {
       }
     }
   })
+  
   beforeAll(() => broker.start())
   afterAll(() => broker.stop())
   it('should get the looked up docs as array', () => {

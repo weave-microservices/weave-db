@@ -1,6 +1,6 @@
 const { Weave, Errors } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
-const DbAdapter = require('../../lib/nedb-adapter')
+const DbAdapter = require('../../lib/adapter')
 const { DocumentNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
@@ -38,17 +38,18 @@ describe('db-service CRUD methods', () => {
 
   afterAll(() => broker.stop())
 
-  it('should insert a new doc', () => {
+  it('should insert a new doc', (done) => {
     return broker.call('test.insert', { entity: docs[0] })
       .then(result => {
         expect(result).toBeDefined()
         expect(result._id).toBeDefined()
         docs[0]._id = result._id
         equalAtLeast(result, docs[0])
+        done()
       })
   })
 
-  it('should insert multiple docs', () => {
+  it('should insert multiple docs', (done) => {
     return broker.call('test.insertMany', { entities: [docs[1], docs[3], docs[2]] })
       .then(results => {
         expect(results).toBeDefined()
@@ -64,6 +65,7 @@ describe('db-service CRUD methods', () => {
         equalAtLeast(results[0], docs[1])
         equalAtLeast(results[1], docs[3])
         equalAtLeast(results[2], docs[2])
+        done()
       })
   })
 
