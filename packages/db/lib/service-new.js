@@ -10,9 +10,8 @@ const { promisify, isFunction, isObject, dotGet, dotSet, flattenDeep } = require
 // own modules
 const NeDbAdapter = require('./adapter')
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors')
-const { createActions } = require('./register-actions')
 
-module.exports = (mixinOptions) => {
+module.exports = () => {
   return {
     settings: {
       idFieldName: '_id',
@@ -20,9 +19,6 @@ module.exports = (mixinOptions) => {
       maxPageSize: 1000,
       lookups: null,
       fields: null
-    },
-    actions: {
-      ...createActions(mixinOptions)
     },
     methods: {
       connect () {
@@ -70,7 +66,6 @@ module.exports = (mixinOptions) => {
           }
         }
 
-        // handle list action
         if (context.action.name.endsWith('.list')) {
           if (!sanitizedData.page) {
             sanitizedData.page = 1
