@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.7.1-beta.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-sequelize@0.7.0...@weave-js/db-sequelize@0.7.1-beta.0) (2021-08-03)
+
+
+### Features
+
+* Added composable service ([bdaf333](https://github.com/weave-microservices/weave-db/commit/bdaf333c2d9396b43eb8b21115f0a3b7b57cd1ee))
+
+
+
+
+
 # [0.7.0](https://github.com/weave-microservices/weave-db/compare/@weave-js/db-sequelize@0.7.0-rc.1...@weave-js/db-sequelize@0.7.0) (2021-01-07)
 
 **Note:** Version bump only for package @weave-js/db-sequelize

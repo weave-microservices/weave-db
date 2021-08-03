@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [0.9.0-beta.4](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.9.0-beta.3...@weave-js/db@0.9.0-beta.4) (2021-08-03)
+
+
+### Features
+
+* Added composable service ([bdaf333](https://github.com/weave-microservices/weave-db/commit/bdaf333c2d9396b43eb8b21115f0a3b7b57cd1ee))
+* Refactoring ([b5e8878](https://github.com/weave-microservices/weave-db/commit/b5e8878ed9d7205601e08a8e3b72b48a7fdd7417))
+
+
+
+
+
 # [0.9.0-beta.3](https://github.com/weave-microservices/weave-db/compare/@weave-js/db@0.9.0-beta.2...@weave-js/db@0.9.0-beta.3) (2021-04-20)
 
 **Note:** Version bump only for package @weave-js/db
