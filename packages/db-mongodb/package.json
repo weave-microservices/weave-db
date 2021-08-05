@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@weave-js/db": "^0.9.0-beta.4",
-    "mongodb": "^4.0.1"
+    "mongodb": "^3.6.10"
   },
   "gitHead": "157d0239e764a8138d7cdce28793f39859d2a353"
 }
