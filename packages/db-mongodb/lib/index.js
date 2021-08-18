@@ -5,7 +5,7 @@
  */
 
 const { AdapterBase } = require('@weave-js/db')
-const { MongoClient, ObjectID } = require('mongodb')
+const { MongoClient, ObjectId } = require('mongodb')
 
 module.exports = (options) => {
   options = Object.assign({
@@ -62,13 +62,13 @@ module.exports = (options) => {
     },
     findById (id) {
       return this.collection
-        .findOne({ [this.$idField]: this.stringToObjectID(id) })
+        .findOne({ [this.$idField]: this.stringToObjectId(id) })
     },
     findByIds (ids) {
       return this.collection
         .find({
           [this.$idField]: {
-            $in: ids.map(id => this.stringToObjectID(id))
+            $in: ids.map(id => this.stringToObjectId(id))
           }
         })
         .toArray()
@@ -79,7 +79,7 @@ module.exports = (options) => {
         const query = params.query || {}
 
         if (query[this.$idField]) {
-          query[this.$idField] = this.stringToObjectID(query[this.$idField])
+          query[this.$idField] = this.stringToObjectId(query[this.$idField])
         }
 
         // Init cursor
@@ -130,7 +130,7 @@ module.exports = (options) => {
     updateById (id, entity) {
       return this.collection
         .findOneAndUpdate(
-          { [this.$idField]: this.stringToObjectID(id) },
+          { [this.$idField]: this.stringToObjectId(id) },
           entity,
           { returnOriginal: false }
         )
@@ -138,7 +138,7 @@ module.exports = (options) => {
     },
     removeById (id) {
       return this.collection
-        .findOneAndDelete({ [this.$idField]: this.stringToObjectID(id) })
+        .findOneAndDelete({ [this.$idField]: this.stringToObjectId(id) })
         .then(result => result.value)
     },
     clear () {
@@ -150,20 +150,20 @@ module.exports = (options) => {
       const data = Object.assign({}, entity)
 
       if (data[this.$idField]) {
-        data[this.$idField] = this.objectIDToString(entity[this.$idField])
+        data[this.$idField] = this.objectIdToString(entity[this.$idField])
       }
 
       return data
     },
-    objectIDToString (objectId) {
+    objectIdToString (objectId) {
       if (objectId && objectId.toHexString) {
         return objectId.toHexString()
       }
       return objectId
     },
-    stringToObjectID (value) {
-      if (typeof value === 'string' && ObjectID.isValid(value)) {
-        return new ObjectID(value)
+    stringToObjectId (value) {
+      if (typeof value === 'string' && ObjectId.isValid(value)) {
+        return new ObjectId(value)
       }
       return value
     }

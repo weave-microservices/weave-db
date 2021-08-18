@@ -59,7 +59,7 @@ module.exports = () => {
           sanitizedData.lookup = sanitizedData.lookup.split(' ')
         }
 
-        // If we use ID mapping and want only specific fields, we need to add the id field to the fieldlist.
+        // If we use Id mapping and want only specific fields, we need to add the id field to the fieldlist.
         if (sanitizedData.mapIds === true) {
           if (Array.isArray(sanitizedData.fields) > 0 && !sanitizedData.fields.includes(this.settings.idFieldName)) {
             sanitizedData.fields.push(this.settings.idFieldName)
