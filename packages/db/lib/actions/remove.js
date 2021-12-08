@@ -1,4 +1,4 @@
-const { DocumentNotFoundError } = require('../errors')
+const { EntityNotFoundError } = require('../errors')
 
 module.exports = () => {
   return {
@@ -10,7 +10,7 @@ module.exports = () => {
       return this.adapter.removeById(id)
         .then(entity => {
           if (!entity) {
-            return Promise.reject(new DocumentNotFoundError(id))
+            return Promise.reject(new EntityNotFoundError(id))
           }
 
           return this.transformDocuments(context, context.data, entity)

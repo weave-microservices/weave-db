@@ -1,8 +1,12 @@
-const { Weave, Errors } = require('@weave-js/core')
-const { DbService } = require('../../lib/index')
+const { Weave } = require('@weave-js/core')
+const { DbServiceNew } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
+
+const { mixin } = DbServiceNew({
+  loadAllActions: true
+})
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -19,6 +23,7 @@ const equalAtLeast = (obj, origin) => {
 
 describe('db-service entity validation methods', () => {
   const broker = Weave({
+    nodeId: 'entity-validator',
     logger: {
       enabled: false
     }
@@ -26,7 +31,7 @@ describe('db-service entity validation methods', () => {
 
   broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: mixin,
     adapter: DbAdapter(),
     collectionName: 'crud_test',
     entitySchema: {
@@ -68,7 +73,7 @@ describe('db-service custom validation method', () => {
 
   const service = broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: mixin,
     adapter: DbAdapter(),
     collectionName: 'crud_test',
     methods: {

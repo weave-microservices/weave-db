@@ -1,11 +1,11 @@
 const fs = require('fs')
-const path = require('path')
-module.exports = filePrefix => {
+module.exports = (filePrefix) => {
   // delete db files after testing
+
   afterAll(() => {
     try {
-      const files = ['test.db', 'threads.db', 'users.db', 'files.db']
-      files.forEach(file => fs.unlink(path.join(__dirname, '..', `${filePrefix}_${file}`), () => {}))
+      const files = ['actions.db', 'test.db', 'threads.db', 'users.db', 'files.db']
+      files.forEach(file => fs.unlink(`${process.cwd()}/${filePrefix}_${file}`, () => {}))
     } catch (e) {}
   })
 }

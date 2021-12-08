@@ -1,8 +1,12 @@
 const { Weave, Errors } = require('@weave-js/core')
-const { DbService } = require('../../lib/index')
+const { DbServiceNew } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('hooks')
+
+const { mixin } = DbServiceNew({
+  loadAllActions: true
+})
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -20,6 +24,7 @@ const equalAtLeast = (obj, origin) => {
 describe('db-service CRUD methods', () => {
   let flow = []
   const broker = Weave({
+    nodeId: 'hooks',
     logger: {
       enabled: false
     }
@@ -27,7 +32,7 @@ describe('db-service CRUD methods', () => {
 
   broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: mixin,
     adapter: DbAdapter(),
     collectionName: 'hooks_test',
     entityInserted (doc, a) {

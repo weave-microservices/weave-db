@@ -1,6 +1,9 @@
 
 module.exports = () => {
   return {
+    getIdFieldName () {
+      throw new Error('Method not implemented.')
+    },
     init (broker, service) {
       return Promise.resolve(this)
     },

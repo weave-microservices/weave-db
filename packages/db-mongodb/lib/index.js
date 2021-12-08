@@ -24,7 +24,6 @@ module.exports = (options) => {
       this.$service = service
       this.$collectionName = service.schema.collectionName
       this.$idField = service.schema.settings.idFieldName || '_id'
-
       this.log = broker.createLogger('MONGODB ADAPTER')
     },
     connect () {
@@ -32,7 +31,6 @@ module.exports = (options) => {
         this.client = client
         this.db = this.$service.db = client.db ? client.db(options.database) : client
         this.collection = this.$service.db.collection(this.$collectionName)
-
         this.log.debug('Database connection etablished')
 
         return { dbInstance: this.db }
