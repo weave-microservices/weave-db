@@ -5,8 +5,8 @@ const NeDbAdapter = require('./adapter')
 module.exports.createHooks = (mixinOptions) => {
   return {
     created () {
-      if (mixinOptions.adapter) {
-        this.adapter = mixinOptions.adapter
+      if (this.schema.adapter) {
+        this.adapter = this.schema.adapter
       } else {
         this.adapter = NeDbAdapter()
       }

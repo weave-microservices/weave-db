@@ -50,10 +50,30 @@ module.exports = (options) => {
         .find(query)
         .count()
     },
-    insert (entity) {
-      return this.collection
-        .insertOne(entity)
-        .then(result => result.insertedCount > 0 ? result.ops[0] : null)
+    async insert (entity) {
+      const result = await this.collection.insertOne(entity)
+      if (!result.acknowledged) {
+        throw new Error('MongoDb insert failed.')
+      }
+      return entity
+    },
+    async insertMany (entities, returnEntities = true) {
+      const result = await this.collection.insertMany(entities)
+      if (!result.acknowledged) {
+        throw new Error('MongoDb insert failed.')
+      }
+
+      // if (returnEntities) {
+      //   const results = [...entities]
+      //   return Object.values(result.insertedIds).map((id, index) => {
+      //     const entity = results[index]
+      //     entity[this.$idField] = this.objectIdToString(id)
+      //     return entity
+      //   })
+      // }
+
+      return entities
+        // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
     findOne (query) {
       return this.collection.findOne(query)
