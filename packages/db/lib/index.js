@@ -1,8 +1,7 @@
 module.exports = {
   AdapterBase: require('./adapter-base'),
   DbService: require('./service'),
-  DbServiceNew: require('./db-mixin-provider'),
-  DefaultAdapter: require('./adapter'),
+  DbMixinProvider: require('./db-mixin-provider'),
   Errors: require('./errors'),
   actions: require('./actions')
 }

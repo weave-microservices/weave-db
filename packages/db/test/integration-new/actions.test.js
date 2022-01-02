@@ -1,7 +1,7 @@
 const { createBroker } = require('@weave-js/core')
-const { DbServiceNew } = require('../../lib/index')
+const { DbMixinProvider } = require('../../lib/index')
 
-const { mixin, actions } = DbServiceNew()
+const { mixin, action } = DbMixinProvider()
 
 require('../setup')('actions')
 
@@ -17,7 +17,7 @@ describe('should build my service only with defined actions', () => {
     mixins: mixin,
     collectionName: 'actions_test',
     actions: {
-      ...actions.count()
+      ...action.count()
     }
   })
 

@@ -7,7 +7,7 @@
 // npm packages
 const { defaultsDeep } = require('@weave-js/utils')
 const { createDbMethods } = require('./methods')
-const { initActionFactories } = require('./actions-new')
+const { initActionFactories } = require('./provider-actions')
 // own modules
 
 const { createHooks } = require('./hooks')
@@ -46,14 +46,14 @@ const { createHooks } = require('./hooks')
 /**
  * @typedef {Object} DbServiceProvider Database Mixin options
  * @property {Object} mixin DB mixin
- * @property {DbActions} actions Actions
+ * @property {DbActions} action Actions
 */
 
 /**
  * Create a new DB mixin instance.
  * @param {DBMixinOptions?} mixinOptions DB mixin options
  * @returns {DbServiceProvider} Db Mixin
- */
+*/
 module.exports = (mixinOptions = {}) => {
   mixinOptions = defaultsDeep(mixinOptions, {
     loadAllActions: false,
@@ -78,12 +78,12 @@ module.exports = (mixinOptions = {}) => {
     ...createHooks(mixinOptions)
   }
 
-  const actions = initActionFactories(mixinOptions)
+  const actionFactories = initActionFactories(mixinOptions)
 
-  // If the "loadAllActions" property is set tu "true", we load all action factories with the default options
+  // If the "loadAllActions" property is set to "true", we load all action factories with the default options
   const loadedActions = {}
   if (mixinOptions.loadAllActions) {
-    Object.values(actions).map(actionFactory => {
+    Object.values(actionFactories).map(actionFactory => {
       Object.entries(actionFactory()).forEach(([key, action]) => {
         loadedActions[key] = action
       })
@@ -94,6 +94,6 @@ module.exports = (mixinOptions = {}) => {
 
   return {
     mixin: schema,
-    actions: actions
+    action: actionFactories
   }
 }

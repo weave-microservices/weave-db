@@ -1,11 +1,14 @@
 const { Weave } = require('@weave-js/core')
-const { DbServiceNew } = require('../../lib/index')
+const { DbMixinProvider } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
-const { mixin } = DbServiceNew({
-  loadAllActions: true
+const { mixin } = DbMixinProvider({
+  loadAllActions: true,
+  entitySchema: {
+    name: 'string'
+  }
 })
 
 const docs = [
@@ -32,11 +35,7 @@ describe('db-service entity validation methods', () => {
   broker.createService({
     name: 'test',
     mixins: mixin,
-    adapter: DbAdapter(),
-    collectionName: 'crud_test',
-    entitySchema: {
-      name: 'string'
-    }
+    collectionName: 'crud_test'
   })
 
   beforeAll(() => broker.start())
@@ -58,7 +57,7 @@ describe('db-service entity validation methods', () => {
       name: 123
     }}).catch(error => {
       const item = error.data[0]
-      expect(item.message).toBe('The parameter "name" have to be a string.')
+      expect(item.message).toBe('The parameter "entity.name" have to be a string.')
       expect(item.passed).toBe(123)
     })
   })

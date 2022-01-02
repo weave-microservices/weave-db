@@ -116,13 +116,13 @@ module.exports.createDbMethods = (mixinOptions) => {
 
       return result
     },
-    async insert (context) {
+    async insert (context, insertEntity) {
       // const { entity } = context.data
       // return this.validateEntity(entity)
       //   .then(entity => this.adapter.insert(entity))
       //   .then(data => this.entityChanged('Inserted', data, context).then(() => data))
       const entity = await this.validateEntity(context.data.entity)
-      const insertResult = await this.adapter.insert(entity)
+      const insertResult = await this.adapter.insert(entity, insertEntity)
       await this.entityChanged('Inserted', insertResult, context)
       return insertResult
     },
@@ -165,6 +165,30 @@ module.exports.createDbMethods = (mixinOptions) => {
           }
 
           return this.adapter.findById(id)
+        })
+    },
+    update (context) {
+      const { id, entity } = context.data
+      return this.adapter.updateById(id, entity)
+        .then(entity => {
+          if (!entity) {
+            return Promise.reject(new EntityNotFoundError(id))
+          }
+
+          return this.transformDocuments(context, context.data, entity)
+        })
+        .then(data => this.entityChanged('Updated', data, context).then(() => data))
+    },
+    remove (context) {
+      const { id } = context.data
+      return this.adapter.removeById(id)
+        .then((entity) => {
+          if (!entity) {
+            return Promise.reject(new EntityNotFoundError(id))
+          }
+
+          return this.transformDocuments(context, context.data, entity)
+            .then(data => this.entityChanged('Removed', data, context).then(() => data))
         })
     },
     transformDocuments (context, data, entities) {
@@ -232,6 +256,7 @@ module.exports.createDbMethods = (mixinOptions) => {
           })
         }
 
+        // Custom handler function
         if (rule.handler) {
           let ruleResult = rule.handler.call(this, context, arr, idList, rule)
 

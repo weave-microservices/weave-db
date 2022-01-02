@@ -4,7 +4,8 @@
   "description": "Weave Db adapter for sequelize",
   "main": "lib/index.js",
   "scripts": {
-    "lint": "eslint --ext=.js lib --fix"
+    "lint": "eslint --ext=.js lib --fix",
+    "test": "jest --no-cache --runInBand"
   },
   "private": true,
   "author": {
@@ -18,15 +19,10 @@
     "access": "restricted"
   },
   "dependencies": {
-    "mysql2": "^2.2.5",
-    "sequelize": "^6.6.5"
+    "sequelize": "^6.12.0-beta.2"
   },
   "devDependencies": {
-    "eslint": "^7.32.0",
-    "eslint-config-fw": "^1.0.3",
-    "eslint-loader": "^4.0.2",
-    "istanbul": "^0.4.5",
-    "jest": "^27.0.6"
+    "@weave-js/db-tests": "0.0.1"
   },
   "gitHead": "cdd9762d78d076dc7bdfa0784cdc9ce6af6a57c3"
 }

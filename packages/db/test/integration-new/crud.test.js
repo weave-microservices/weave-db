@@ -1,5 +1,5 @@
 const { Weave, Errors } = require('@weave-js/core')
-const { DbServiceNew } = require('../../lib/index')
+const { DbMixinProvider } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
@@ -11,7 +11,7 @@ const docs = [
   { name: 'Blabla.pdf', content: 'Blabla', size: 566 }
 ]
 
-const { mixin } = DbServiceNew({
+const { mixin } = DbMixinProvider({
   loadAllActions: true
 })
 
@@ -33,7 +33,6 @@ describe('NEW db-service CRUD methods', () => {
   broker.createService({
     name: 'test',
     mixins: mixin,
-    adapter: DbAdapter(),
     collectionName: 'crud_test',
     settings: {
       // fields: ['id', 'name']

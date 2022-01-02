@@ -1,7 +1,7 @@
 const { createBroker } = require('@weave-js/core')
-const { DbServiceNew } = require('@weave-js/db')
+const { DbMixinProvider } = require('@weave-js/db')
 const MongoDbAdapter = require('../../lib/index')
-const { mixin, actions } = DbServiceNew()
+const { mixin, actions } = DbMixinProvider()
 
 require('../setup')('actions')
 

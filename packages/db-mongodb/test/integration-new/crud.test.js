@@ -1,5 +1,5 @@
 const { Weave, Errors } = require('@weave-js/core')
-const { DbServiceNew } = require('@weave-js/db')
+const { DbMixinProvider } = require('@weave-js/db')
 const MongoDbAdapter = require('../../lib')
 const { EntityNotFoundError } = require('@weave-js/db/lib/errors')
 require('../setup')('crud')
@@ -11,7 +11,7 @@ const docs = [
   { name: 'Blabla.pdf', content: 'Blabla', size: 566 }
 ]
 
-const { mixin } = DbServiceNew({
+const { mixin } = DbMixinProvider({
   loadAllActions: true
 })
 

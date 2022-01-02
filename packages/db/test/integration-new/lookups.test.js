@@ -1,8 +1,8 @@
 const { Weave } = require('@weave-js/core')
-const { DbServiceNew } = require('../../lib/index')
+const { DbMixinProvider } = require('../../lib/index')
 require('../setup')('lookups')
 
-const { mixin } = DbServiceNew({
+const { mixin } = DbMixinProvider({
   loadAllActions: true
 })
 

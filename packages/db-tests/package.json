@@ -1,0 +1,13 @@
+{
+  "name": "@weave-js/db-tests",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@weave-js/db": "^0.9.0-beta.5"
+  }
+}

@@ -1,13 +1,13 @@
 module.exports = (mixinOptions) => (actionOptions = {
-  name: 'insert'
+  name: 'remove'
 }) => {
   return {
     [actionOptions.name]: {
       params: {
-        entity: { type: 'any' }
+        id: { type: 'any' }
       },
       handler (context) {
-        return this.insert(context)
+        return this.remove(context)
       }
     }
   }

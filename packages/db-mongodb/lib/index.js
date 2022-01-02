@@ -46,6 +46,9 @@ module.exports = (options) => {
     },
     count (params) {
       const query = params.query || {}
+      if (query[this.$idField]) {
+        query[this.$idField] = this.stringToObjectId(query[this.$idField])
+      }
       return this.collection
         .find(query)
         .count()
@@ -55,7 +58,10 @@ module.exports = (options) => {
       if (!result.acknowledged) {
         throw new Error('MongoDb insert failed.')
       }
-      return entity
+
+      const copy = Object.assign({}, entity)
+      copy[this.$idField] = this.objectIdToString(result.insertedId)
+      return copy
     },
     async insertMany (entities, returnEntities = true) {
       const result = await this.collection.insertMany(entities)
@@ -63,16 +69,16 @@ module.exports = (options) => {
         throw new Error('MongoDb insert failed.')
       }
 
-      // if (returnEntities) {
-      //   const results = [...entities]
-      //   return Object.values(result.insertedIds).map((id, index) => {
-      //     const entity = results[index]
-      //     entity[this.$idField] = this.objectIdToString(id)
-      //     return entity
-      //   })
-      // }
+      if (returnEntities) {
+        const results = [...entities]
+        return Object.values(result.insertedIds).map((id, index) => {
+          const entity = results[index]
+          entity[this.$idField] = this.objectIdToString(id)
+          return entity
+        })
+      }
 
-      return entities
+      return entities.ma
         // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
     findOne (query) {

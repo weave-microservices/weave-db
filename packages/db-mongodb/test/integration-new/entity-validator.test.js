@@ -1,10 +1,10 @@
 const { Weave } = require('@weave-js/core')
-const { DbServiceNew } = require('../../lib/index')
+const { DbMixinProvider } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
-const { mixin } = DbServiceNew({
+const { mixin } = DbMixinProvider({
   loadAllActions: true
 })
 
