@@ -37,10 +37,10 @@ const { createHooks } = require('./hooks')
 
 /**
  * @typedef {Object} DBMixinOptions Database Mixin options
- * @property {Adapter} adapter Database adapter
- * @property {boolean} loadAllActions Should the mixin load all actions.
- * @property {('emit'|'broadcast')} entityChangedEventType Event type of the entity changed events.
- * @property {string} eventChangedName Event changed name
+ * @property {Adapter} [adapter] Database adapter
+ * @property {boolean} [loadAllActions=false] Should the mixin load all actions.
+ * @property {('emit'|'broadcast')} [entityChangedEventType=emit] Event type of the entity changed events.
+ * @property {string} [eventChangedName] Event changed name
 */
 
 /**
@@ -51,14 +51,15 @@ const { createHooks } = require('./hooks')
 
 /**
  * Create a new DB mixin instance.
- * @param {DBMixinOptions?} mixinOptions DB mixin options
+ * @param {DBMixinOptions=} mixinOptions DB mixin options
  * @returns {DbServiceProvider} Db Mixin
 */
-module.exports = (mixinOptions = {}) => {
+module.exports = (mixinOptions) => {
   mixinOptions = defaultsDeep(mixinOptions, {
     loadAllActions: false,
     adapter: null,
-    entityChangedEventType: '',
+    entityChangedEventType: 'emit',
+    eventChangedName: '',
     cache: {
       enabled: false
     }

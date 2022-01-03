@@ -12,17 +12,18 @@ module.exports = (options) => {
     transform: true,
     options: {
       useUnifiedTopology: true
-    }
+    },
+    collectionName: undefined
   }, options)
 
   return Object.assign(AdapterBase(), {
     init (broker, service) {
-      if (!service.schema.collectionName) {
+      if (options.collectionName || !service.schema.collectionName) {
         throw new Error('Collection name is missing!')
       }
 
       this.$service = service
-      this.$collectionName = service.schema.collectionName
+      this.$collectionName = options.collectionName || service.schema.collectionName
       this.$idField = service.schema.settings.idFieldName || '_id'
       this.log = broker.createLogger('MONGODB ADAPTER')
     },
@@ -78,8 +79,8 @@ module.exports = (options) => {
         })
       }
 
-      return entities.ma
-        // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
+      return entities.insertedIds.map(id => this.objectIdToString(id))
+      // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
     findOne (query) {
       return this.collection.findOne(query)

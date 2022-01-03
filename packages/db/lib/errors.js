@@ -12,6 +12,13 @@ class EntityNotFoundError extends WeaveError {
   }
 }
 
+class DocumentNotFoundError extends WeaveError {
+  constructor (id) {
+    super('Document not found', 404, null, { id })
+  }
+}
+
 module.exports = {
-  EntityNotFoundError
+  EntityNotFoundError,
+  DocumentNotFoundError
 }

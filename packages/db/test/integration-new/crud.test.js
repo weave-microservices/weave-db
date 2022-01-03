@@ -1,6 +1,5 @@
 const { Weave, Errors } = require('@weave-js/core')
 const { DbMixinProvider } = require('../../lib/index')
-const DbAdapter = require('../../lib/adapter')
 const { EntityNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
