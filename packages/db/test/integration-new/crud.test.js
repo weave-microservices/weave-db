@@ -129,9 +129,9 @@ describe('NEW db-service CRUD methods', () => {
         expect(results.length).toBe(1)
         equalAtLeast(results[0], docs[1])
       })
-      .catch(error => {
-        expect(error).toBeInstanceOf(EntityNotFoundError)
-      })
+      // .catch(error => {
+      //   expect(error).toBeInstanceOf(EntityNotFoundError)
+      // })
   })
 
   it('should stream result', () => {

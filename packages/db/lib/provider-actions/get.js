@@ -2,9 +2,11 @@ module.exports = (mixinOptions) => (actionOptions = {
   name: 'get',
   cache: {
     keys: ['id', 'fields', 'lookup']
-  }
+  },
+  visibility: mixinOptions.actionVisibility
 }) => {
   const actionDefinition = {
+    visibility: actionOptions.visibility,
     params: {
       id: { type: 'any' },
       fields: { type: 'array', itemType: { type: 'string' }, optional: true },

@@ -166,9 +166,8 @@ module.exports = (options) => {
         .findOneAndDelete({ [this.$idField]: this.stringToObjectId(id) })
         .then(result => result.value)
     },
-    clear () {
-      return this.collection
-        .deleteMany({})
+    async clear () {
+      const result = await this.collection.deleteMany({})
         .then(result => result.deletedCount)
     },
     entityToObject (entity) {

@@ -2,6 +2,11 @@ const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors')
 const { isObject } = require('@weave-js/utils')
 const NeDbAdapter = require('./adapter')
 
+/**
+ * Create service hooks
+ * @param {import('./db-mixin-provider').DBMixinOptions} mixinOptions Mixin options
+ * @returns {Object} Hooks
+ */
 module.exports.createHooks = (mixinOptions) => {
   return {
     created () {
@@ -33,20 +38,22 @@ module.exports.createHooks = (mixinOptions) => {
     started () {
       // todo: validate adapter.
       const self = this
-      return new Promise(resolve => {
-        const connecting = () => {
+      return new Promise((resolve) => {
+        const tryConnect = () => {
           this.connect()
             .then((adapterResult) => {
               resolve(adapterResult)
             }).catch(error => {
-              setTimeout(() => {
-                self.log.error('Connection error', error)
-                self.log.info('Trying to reconnect...')
-                connecting()
-              }, 2000)
+              if (mixinOptions.reconnectOnError) {
+                setTimeout(() => {
+                  self.log.error('Connection error', error)
+                  self.log.info('Trying to reconnect...')
+                  tryConnect()
+                }, mixinOptions.reconnectTimeout)
+              }
             })
         }
-        connecting()
+        tryConnect()
       })
     },
     stopped () {

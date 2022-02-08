@@ -1,7 +1,7 @@
 const { Weave, Errors } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
-const { EntityNotFoundError } = require('../../lib/errors')
+const { DocumentNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
 const docs = [
@@ -115,7 +115,7 @@ describe('db-service CRUD methods', () => {
   it('should throw an error if a document does not exist.', () => {
     return broker.call('test.get', { id: 99999999999 })
       .catch(error => {
-        expect(error).toBeInstanceOf(EntityNotFoundError)
+        expect(error).toBeInstanceOf(DocumentNotFoundError)
       })
   })
 
@@ -126,7 +126,7 @@ describe('db-service CRUD methods', () => {
         equalAtLeast(results[0], docs[1])
       })
       .catch(error => {
-        expect(error).toBeInstanceOf(EntityNotFoundError)
+        expect(error).toBeInstanceOf(DocumentNotFoundError)
       })
   })
 
@@ -187,7 +187,7 @@ describe('db-service CRUD methods', () => {
         equalAtLeast(results[0], docs[1])
       })
       .catch(error => {
-        expect(error).toBeInstanceOf(EntityNotFoundError)
+        expect(error).toBeInstanceOf(DocumentNotFoundError)
       })
   })
 })

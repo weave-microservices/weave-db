@@ -1,10 +1,12 @@
 module.exports = (mixinOptions) => (actionOptions = {
   name: 'findOne',
+  visibility: mixinOptions.actionVisibility,
   cache: {
     keys: ['lookup', 'query']
   }
 }) => {
   const actionDefinition = {
+    visibility: actionOptions.visibility,
     params: {
       query: { type: 'any', optional: true },
       lookup: { type: 'array', itemType: { type: 'string' }, optional: true },

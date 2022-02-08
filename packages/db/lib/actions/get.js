@@ -1,4 +1,4 @@
-const { EntityNotFoundError } = require('../errors')
+const { DocumentNotFoundError } = require('../errors')
 
 /**
  * Get entity by id.
@@ -24,7 +24,7 @@ module.exports = () => {
       return this.getById(data.id)
         .then(entities => {
           if (!entities) {
-            return Promise.reject(new EntityNotFoundError(data.id))
+            return Promise.reject(new DocumentNotFoundError(data.id))
           }
 
           return this.transformDocuments(context, data, entities)

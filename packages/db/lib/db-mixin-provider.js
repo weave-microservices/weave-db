@@ -37,10 +37,13 @@ const { createHooks } = require('./hooks')
 
 /**
  * @typedef {Object} DBMixinOptions Database Mixin options
- * @property {Adapter} [adapter] Database adapter
+ * @property {Adapter} [adapter] Database adapter.
  * @property {boolean} [loadAllActions=false] Should the mixin load all actions.
  * @property {('emit'|'broadcast')} [entityChangedEventType=emit] Event type of the entity changed events.
- * @property {string} [eventChangedName] Event changed name
+ * @property {string} [eventChangedName] Event changed name.
+ * @property {boolean} [autoReconnect=true] Try reconnect if the DB connection fails.
+ * @property {number} [reconnectTimeout=2000] Reconnect timeout.
+ * @property {boolean} [throwErrorIfNotFound=true] Throw an error if an document not exisis.
 */
 
 /**
@@ -57,12 +60,17 @@ const { createHooks } = require('./hooks')
 module.exports = (mixinOptions) => {
   mixinOptions = defaultsDeep(mixinOptions, {
     loadAllActions: false,
+    actionVisibility: 'public',
     adapter: null,
     entityChangedEventType: 'emit',
     eventChangedName: '',
     cache: {
-      enabled: false
-    }
+      enabled: false,
+      keys: undefined
+    },
+    reconnectOnError: true,
+    reconnectTimeout: 2000,
+    throwErrorIfNotFound: true
   })
 
   const schema = {

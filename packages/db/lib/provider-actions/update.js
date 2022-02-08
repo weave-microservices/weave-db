@@ -1,11 +1,13 @@
 const { getEntityValidationSchema } = require('../utils/getEntityValidationSchema')
 
 module.exports = (mixinOptions) => (actionOptions = {
-  name: 'update'
+  name: 'update',
+  visibility: mixinOptions.actionVisibility
 }) => {
   const entityValidationSchema = getEntityValidationSchema(mixinOptions.entitySchema)
   return {
     [actionOptions.name]: {
+      visibility: actionOptions.visibility,
       params: {
         id: { type: 'any' },
         entity: entityValidationSchema,

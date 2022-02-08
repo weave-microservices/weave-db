@@ -2,9 +2,11 @@ module.exports = (mixinOptions) => (actionOptions = {
   name: 'find',
   cache: {
     keys: ['lookup', 'query']
-  }
+  },
+  visibility: mixinOptions.actionVisibility
 }) => {
   const actionDefinition = {
+    visibility: actionOptions.visibility,
     params: {
       query: { type: 'any', optional: true },
       sort: { type: 'any', optional: true },

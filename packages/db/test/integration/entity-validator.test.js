@@ -1,7 +1,7 @@
 const { Weave, Errors } = require('@weave-js/core')
 const { DbService } = require('../../lib/index')
 const DbAdapter = require('../../lib/adapter')
-const { EntityNotFoundError } = require('../../lib/errors')
+const { DocumentNotFoundError } = require('../../lib/errors')
 require('../setup')('crud')
 
 const docs = [

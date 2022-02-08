@@ -1,24 +1,30 @@
 const { isFunction, isObject, dotSet, dotGet, flattenDeep, promisify } = require('@weave-js/utils')
 const { EntityNotFoundError } = require('./errors')
 
+/**
+ * Create mixin methods
+ * @param {import('./db-mixin-provider').DBMixinOptions} mixinOptions Mixin Options
+ * @returns {Object} Methods
+ */
 module.exports.createDbMethods = (mixinOptions) => {
   return {
     connect () {
       const self = this
-      return this.adapter.connect().then((adapterResult) => {
-        try {
-          if (isFunction(self.schema.afterConnect)) {
-            self.schema.afterConnect.call(this, adapterResult)
+      return this.adapter.connect()
+        .then((adapterResult) => {
+          try {
+            if (isFunction(self.schema.afterConnect)) {
+              self.schema.afterConnect.call(this, adapterResult)
+            }
+          } catch (error) {
+            this.log.error('afterConnect error: ', error)
           }
-        } catch (error) {
-          this.log.error('afterConnect error: ', error)
-        }
-      })
+        })
     },
     disconnect () {
       return this.adapter.disconnect()
     },
-    sanitizeParams (context, data) {
+    sanitizeParams (data, options) {
       const sanitizedData = Object.assign({}, data)
 
       if (typeof sanitizedData.limit === 'string') {
@@ -48,37 +54,41 @@ module.exports.createDbMethods = (mixinOptions) => {
         }
       }
 
-      if (context.action.name.endsWith('.list')) {
-        if (!sanitizedData.page) {
-          sanitizedData.page = 1
+      if (options) {
+        // Remove limit
+        if (options.removeLimit && sanitizedData.limit) {
+          sanitizedData.limit = null
         }
 
-        if (!sanitizedData.pageSize) {
-          sanitizedData.pageSize = this.settings.pageSize
+        // Remove offset
+        if (options.removeOffset && sanitizedData.offset) {
+          sanitizedData.offset = null
         }
 
-        sanitizedData.limit = sanitizedData.pageSize
-        sanitizedData.offset = (sanitizedData.page - 1) * sanitizedData.pageSize
+        // Prepare data for pagination
+        if (options.paginated === true) {
+          if (!sanitizedData.page) {
+            sanitizedData.page = 1
+          }
+  
+          if (!sanitizedData.pageSize) {
+            sanitizedData.pageSize = this.settings.pageSize
+          }
+  
+          sanitizedData.limit = sanitizedData.pageSize
+          sanitizedData.offset = (sanitizedData.page - 1) * sanitizedData.pageSize
+        }
       }
 
       return sanitizedData
     },
     count (context) {
-      const data = this.sanitizeParams(context, context.data)
-
-      if (data.limit) {
-        data.limit = null
-      }
-
-      if (data.offset) {
-        data.offset = null
-      }
-
+      const data = this.sanitizeParams(context.data, { removeLimit: true, removeOffset: true })
       return this.adapter.count(data)
     },
     async findOne (context) {
       // sanitize the given parameters
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context.data)
 
       // send params to the adapter
       const entity = await this.adapter.findOne(data.query)
@@ -88,19 +98,29 @@ module.exports.createDbMethods = (mixinOptions) => {
       return this.adapter.findAsStream(context.data.query, context.data.filterOptions)
     },
     async find (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context.data)
       const entities = await this.adapter.find(data)
       return this.transformDocuments(context, data, entities)
     },
     async get (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context.data)
 
       let result = await this.getById(data.id)
 
       if (!result) {
-        throw new EntityNotFoundError(data.id)
+        if (mixinOptions.throwErrorIfNotFound) {
+          throw new EntityNotFoundError(data.id)
+        }
+        
+        // Return empty result
+        if (Array.isArray(data.id)) {
+          return []
+        } else {
+          return null
+        }
       }
 
+      // perform transformation
       result = await this.transformDocuments(context, data, result)
 
       // map the results by ID into a result object
@@ -117,10 +137,6 @@ module.exports.createDbMethods = (mixinOptions) => {
       return result
     },
     async insert (context, insertEntity) {
-      // const { entity } = context.data
-      // return this.validateEntity(entity)
-      //   .then(entity => this.adapter.insert(entity))
-      //   .then(data => this.entityChanged('Inserted', data, context).then(() => data))
       const entity = await this.validateEntity(context.data.entity)
       const insertResult = await this.adapter.insert(entity, insertEntity)
       await this.entityChanged('Inserted', insertResult, context)
@@ -133,7 +149,7 @@ module.exports.createDbMethods = (mixinOptions) => {
       return insertResult
     },
     async list (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context.data, { paginated: true })
       const countParams = Object.assign({}, data)
 
       // Remove params for count action
@@ -156,26 +172,23 @@ module.exports.createDbMethods = (mixinOptions) => {
         totalPages: Math.floor((count + data.pageSize - 1) / data.pageSize)
       }
     },
-    getById (id) { // by ids
-      return Promise.resolve(id)
-        .then(id => {
-          // Handle ID
-          if (Array.isArray(id)) {
-            return this.adapter.findByIds(id)
-          }
+    async getById (id) {
+        // Handle ID
+        if (Array.isArray(id)) {
+          return this.adapter.findByIds(id)
+        }
 
-          return this.adapter.findById(id)
-        })
+        return this.adapter.findById(id)
     },
     update (context) {
       const { id, entity } = context.data
       return this.adapter.updateById(id, entity)
-        .then(entity => {
-          if (!entity) {
+        .then(result => {
+          if (!result && mixinOptions.throwErrorIfNotFound) {
             return Promise.reject(new EntityNotFoundError(id))
           }
 
-          return this.transformDocuments(context, context.data, entity)
+          return this.transformDocuments(context, context.data, result)
         })
         .then(data => this.entityChanged('Updated', data, context).then(() => data))
     },
