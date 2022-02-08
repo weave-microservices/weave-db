@@ -110,10 +110,10 @@ module.exports = (mixinOptions) => {
         }
 
         return Promise.resolve(entities)
-          .then(entities => entities.map(entity => this.adapter.entityToObject(entity)))
-          .then(json => data.lookup ? this.lookupDocs(context, json, data.lookup) : json)
-          .then(json => this.filterFields(json, data.fields ? data.fields : this.settings.fields))
-          .then(json => isEntity ? json[0] : json)
+          .then((entities) => entities.map(entity => this.adapter.entityToObject(entity)))
+          .then((json) => data.lookup ? this.lookupDocs(context, json, data.lookup) : json)
+          .then((json) => this.filterFields(json, data.fields ? data.fields : this.settings.fields))
+          .then((json) => isEntity ? json[0] : json)
       },
       lookupDocs (context, entities, lookupFields) {
         if (!this.settings.lookups || !Array.isArray(lookupFields) || lookupFields.length === 0) {

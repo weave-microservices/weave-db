@@ -3,7 +3,7 @@ const { getEntityValidationSchema } = require('../utils/getEntityValidationSchem
 module.exports = (mixinOptions) => (actionOptions = {
   name: 'insertMany'
 }) => {
-  const entityValidationSchema = getEntityValidationSchema(mixinOptions.entitySchema, true)
+  const entityValidationSchema = getEntityValidationSchema(mixinOptions.entitySchema, { isArray: true })
 
   return {
     [actionOptions.name]: {

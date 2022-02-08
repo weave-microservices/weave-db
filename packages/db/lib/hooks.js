@@ -16,11 +16,11 @@ module.exports.createHooks = (mixinOptions) => {
 
       // Wrap up entity validation
       if (this.runtime.validator && this.schema.entitySchema && isObject(this.schema.entitySchema)) {
-        const check = this.runtime.validator.compile(this.schema.entitySchema)
+        const validate = this.runtime.validator.compile(this.schema.entitySchema)
 
         // wrap entity validator function and attach to service
         this.entityValidator = (entity) => {
-          const result = check(entity)
+          const result = validate(entity)
 
           if (result === true) {
             return Promise.resolve()
@@ -33,12 +33,12 @@ module.exports.createHooks = (mixinOptions) => {
     started () {
       // todo: validate adapter.
       const self = this
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         const connecting = () => {
           this.connect()
             .then((adapterResult) => {
               resolve(adapterResult)
-            }).catch(error => {
+            }).catch((error) => {
               setTimeout(() => {
                 self.log.error('Connection error', error)
                 self.log.info('Trying to reconnect...')

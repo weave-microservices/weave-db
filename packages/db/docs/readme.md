@@ -9,7 +9,7 @@ const broker = createBroker({
 })
 
 const { mixin, action } = DbMixinProvider({
-    loadAllActions: true
+    loadAllActions: false
 })
 
 broker.createService({

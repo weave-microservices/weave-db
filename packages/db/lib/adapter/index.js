@@ -9,11 +9,11 @@ const NeDB = require('nedb')
 module.exports = (options) => {
   return Object.assign(AdapterBase(), {
     init (broker, service) {
-      if (!service.schema.collectionName) {
+      if (!service.schema.collectionName && !service.settings.collectionName) {
         throw new Error('Collection name is missing!')
       }
       this.broker = broker
-      this.collectionName = service.schema.collectionName
+      this.collectionName = service.schema.collectionName || service.settings.collectionName
       this.$idFieldName = service.schema.settings.idFieldName || '_id'
     },
     connect () {

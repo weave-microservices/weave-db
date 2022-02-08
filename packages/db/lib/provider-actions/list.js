@@ -2,7 +2,9 @@ module.exports = (mixinOptions) => (actionOptions = {
   name: 'list',
   cache: {
     keys: ['lookup', 'query', 'page', 'pageSize']
-  }
+  },
+  pageSize: 10,
+  maxPageSize: 1000
 }) => {
   const actionDefinition = {
     params: {
@@ -14,7 +16,7 @@ module.exports = (mixinOptions) => (actionOptions = {
       pageSize: { type: 'number', optional: true, convert: true }
     },
     handler (context) {
-      return this.list(context)
+      return this.list(context, actionOptions)
     }
   }
 

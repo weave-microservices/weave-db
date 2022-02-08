@@ -1,0 +1,8 @@
+coverage
+dev
+docs
+test/
+.vscode
+.eslintrc.js
+*.db
+CHANGELOG.md

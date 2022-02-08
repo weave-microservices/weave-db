@@ -117,10 +117,6 @@ module.exports.createDbMethods = (mixinOptions) => {
       return result
     },
     async insert (context, insertEntity) {
-      // const { entity } = context.data
-      // return this.validateEntity(entity)
-      //   .then(entity => this.adapter.insert(entity))
-      //   .then(data => this.entityChanged('Inserted', data, context).then(() => data))
       const entity = await this.validateEntity(context.data.entity)
       const insertResult = await this.adapter.insert(entity, insertEntity)
       await this.entityChanged('Inserted', insertResult, context)
@@ -145,7 +141,10 @@ module.exports.createDbMethods = (mixinOptions) => {
         countParams.offset = null
       }
 
-      const [results, count] = await Promise.all([this.adapter.find(data), this.adapter.count(countParams)])
+      const [results, count] = await Promise.all([
+        this.adapter.find(data), // get data for current page
+        this.adapter.count(countParams) // count all entities
+      ])
       const entity = await this.transformDocuments(context, data, results)
 
       return {
@@ -271,7 +270,7 @@ module.exports.createDbMethods = (mixinOptions) => {
             mapIds: true
           }, rule.params || {})
 
-          promises.push(context.call(rule.action, data).then(transformResponse))
+          promises.push(context.call(rule.action, data, { meta: { $isLookupActionCall: true }}).then(transformResponse))
         }
       })
 

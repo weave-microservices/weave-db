@@ -1,4 +1,4 @@
-module.exports = (mixinOptions) => (actionOptions = {
+module.exports = (/* mixinOptions, schema */) => (actionOptions = {
   name: 'count'
 }) => {
   return {

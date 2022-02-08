@@ -19,7 +19,7 @@
   "license": "MIT",
   "dependencies": {
     "@weave-js/db": "^0.9.0-beta.5",
-    "mongodb": "^4.2.1"
+    "mongodb": "^4.3.1"
   },
   "devDependencies": {
     "@weave-js/db-tests": "0.0.1"

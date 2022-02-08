@@ -18,12 +18,14 @@ module.exports = (options) => {
 
   return Object.assign(AdapterBase(), {
     init (broker, service) {
-      if (options.collectionName || !service.schema.collectionName) {
+      const entityName = service.schema.collectionName
+      if (!entityName) {
         throw new Error('Collection name is missing!')
       }
 
       this.$service = service
-      this.$collectionName = options.collectionName || service.schema.collectionName
+      this.$collectionName = entityName
+      this.$entityName = entityName
       this.$idField = service.schema.settings.idFieldName || '_id'
       this.log = broker.createLogger('MONGODB ADAPTER')
     },

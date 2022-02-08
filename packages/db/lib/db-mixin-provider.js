@@ -36,11 +36,18 @@ const { createHooks } = require('./hooks')
 */
 
 /**
+ * @typedef {Object} DBMixinValidatorOptions Database Mixin options
+ * @property {boolean} strict Enable validator strict mode
+ * @property {'remove'|'error'} strictMode Actions
+*/
+
+/**
  * @typedef {Object} DBMixinOptions Database Mixin options
  * @property {Adapter} [adapter] Database adapter
  * @property {boolean} [loadAllActions=false] Should the mixin load all actions.
  * @property {('emit'|'broadcast')} [entityChangedEventType=emit] Event type of the entity changed events.
  * @property {string} [eventChangedName] Event changed name
+ * @property {DBMixinValidatorOptions} validatorOptions Validator options
 */
 
 /**
@@ -58,20 +65,29 @@ module.exports = (mixinOptions) => {
   mixinOptions = defaultsDeep(mixinOptions, {
     loadAllActions: false,
     adapter: null,
+    entityName: null,
     entityChangedEventType: 'emit',
-    eventChangedName: '',
+    entityChangedEventName: '',
     cache: {
-      enabled: false
-    }
+      enabled: false,
+      clearEventName: null
+    },
+    validatorOptions: {
+      strict: true,
+      strictMode: 'remove' // error
+    },
+    entitySchema: null
   })
 
   const schema = {
     settings: {
+      entityName: mixinOptions.entityName,
       idFieldName: '_id',
       pageSize: 10,
       maxPageSize: 1000,
       lookups: null,
-      fields: null
+      fields: null,
+      entitySchema: mixinOptions.entitySchema
     },
     methods: {
       ...createDbMethods(mixinOptions)
@@ -79,9 +95,10 @@ module.exports = (mixinOptions) => {
     ...createHooks(mixinOptions)
   }
 
-  const actionFactories = initActionFactories(mixinOptions)
+  const actionFactories = initActionFactories(mixinOptions, schema)
 
-  // If the "loadAllActions" property is set to "true", we load all action factories with the default options
+  // If the "loadAllActions" property is set to "true", we load
+  // all action factories with the default options
   const loadedActions = {}
   if (mixinOptions.loadAllActions) {
     Object.values(actionFactories).map(actionFactory => {
@@ -90,6 +107,7 @@ module.exports = (mixinOptions) => {
       })
     })
 
+    // Add loaded actions to the service schema
     schema.actions = loadedActions
   }
 
