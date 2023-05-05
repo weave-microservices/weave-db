@@ -71,7 +71,7 @@ describe('db-service CRUD methods', () => {
     return broker.call('test.insert', {})
       .catch(error => {
         expect(error).toBeInstanceOf(Errors.WeaveParameterValidationError)
-        expect(error.code).toBe(422)
+        expect(error.code).toBe('WEAVE_PARAMETER_VALIDATION_ERROR')
       })
   })
 
@@ -116,6 +116,8 @@ describe('db-service CRUD methods', () => {
     return broker.call('test.get', { id: 99999999999 })
       .catch(error => {
         expect(error).toBeInstanceOf(DocumentNotFoundError)
+        expect(error.code).toEqual('DB_DOCUMENT_NOT_FOUND')
+        expect(error.data).toEqual({ id: 99999999999 })
       })
   })
 
@@ -127,6 +129,8 @@ describe('db-service CRUD methods', () => {
       })
       .catch(error => {
         expect(error).toBeInstanceOf(DocumentNotFoundError)
+        expect(error.code).toEqual('DB_DOCUMENT_NOT_FOUND')
+        expect(error.data).toEqual({ id: docs[1]._id })
       })
   })
 

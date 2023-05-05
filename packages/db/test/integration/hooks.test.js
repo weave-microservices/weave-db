@@ -90,7 +90,7 @@ describe('db-service CRUD methods', () => {
     broker.call('test.insert', {})
       .catch(error => {
         expect(error).toBeInstanceOf(Errors.WeaveParameterValidationError)
-        expect(error.code).toBe(422)
+        expect(error.code).toBe('WEAVE_PARAMETER_VALIDATION_ERROR')
         expect(flow.join(',')).toBe('')
         done()
       })
