@@ -5,7 +5,7 @@ module.exports = () => {
       filterOptions: { type: 'object', optional: true }
     },
     handler (context) {
-      return this.adapter.findAsStream(context.data.query, context.data.filterOptions)
+      return this.adapter.findAsStream(context.data.query, context.data.filterOptions);
     }
-  }
-}
+  };
+};

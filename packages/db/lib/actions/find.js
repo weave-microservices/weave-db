@@ -12,10 +12,10 @@ module.exports = () => {
       offset: { type: 'number', optional: true, convert: true }
     },
     handler (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context, context.data);
 
       return this.adapter.find(data)
-        .then(entities => this.transformDocuments(context, data, entities))
+        .then(entities => this.transformDocuments(context, data, entities));
     }
-  }
-}
+  };
+};

@@ -1,4 +1,4 @@
-const { EntityNotFoundError } = require('../errors')
+const { DocumentNotFoundError } = require('../errors');
 
 module.exports = () => {
   return {
@@ -8,16 +8,16 @@ module.exports = () => {
       options: { type: 'object', optional: true }
     },
     handler (context) {
-      const { id, entity } = context.data
+      const { id, entity } = context.data;
       return this.adapter.updateById(id, entity)
         .then(entity => {
           if (!entity) {
-            return Promise.reject(new EntityNotFoundError(id))
+            return Promise.reject(new DocumentNotFoundError(id));
           }
 
-          return this.transformDocuments(context, context.data, entity)
+          return this.transformDocuments(context, context.data, entity);
         })
-        .then(data => this.entityChanged('Updated', data, context).then(() => data))
+        .then(data => this.entityChanged('Updated', data, context).then(() => data));
     }
-  }
-}
+  };
+};

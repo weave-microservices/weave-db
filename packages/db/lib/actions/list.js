@@ -28,16 +28,16 @@ module.exports = () => {
       pageSize: { type: 'number', optional: true, convert: true }
     },
     handler (context) {
-      const data = this.sanitizeParams(context, context.data)
-      const countParams = Object.assign({}, data)
+      const data = this.sanitizeParams(context, context.data);
+      const countParams = Object.assign({}, data);
 
       // Remove params for count action
       if (countParams.limit) {
-        countParams.limit = null
+        countParams.limit = null;
       }
 
       if (countParams.offset) {
-        countParams.offset = null
+        countParams.offset = null;
       }
 
       return Promise.all([this.adapter.find(data), this.adapter.count(countParams)])
@@ -49,8 +49,8 @@ module.exports = () => {
               page: data.page,
               pageSize: data.pageSize,
               totalPages: Math.floor((results[1] + data.pageSize - 1) / data.pageSize)
-            }
-          }))
+            };
+          }));
     }
-  }
-}
+  };
+};

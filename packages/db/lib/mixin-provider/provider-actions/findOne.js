@@ -1,29 +1,30 @@
 module.exports = (mixinOptions) => (actionOptions = {
-  name: 'get',
+  name: 'findOne',
+  visibility: mixinOptions.actionVisibility,
   cache: {
-    keys: ['id', 'fields', 'lookup']
+    keys: ['lookup', 'query']
   }
 }) => {
   const actionDefinition = {
+    visibility: actionOptions.visibility,
     params: {
-      id: { type: 'any' },
-      fields: { type: 'array', itemType: { type: 'string' }, optional: true },
+      query: { type: 'any', optional: true },
       lookup: { type: 'array', itemType: { type: 'string' }, optional: true },
-      mapIds: { type: 'boolean', optional: true }
+      fields: { type: 'array', itemType: { type: 'string' }, optional: true }
     },
     handler (context) {
-      return this.get(context)
+      return this.findOne(context);
     }
-  }
+  };
 
   // Cache settings
   if (mixinOptions.cache.enabled) {
     actionDefinition.cache = {
       keys: actionOptions.cache.keys
-    }
+    };
   }
 
   return {
     [actionOptions.name]: actionDefinition
-  }
-}
+  };
+};

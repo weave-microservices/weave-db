@@ -1,14 +1,16 @@
 module.exports = (mixinOptions) => (actionOptions = {
-  name: 'remove'
+  name: 'remove',
+  visibility: mixinOptions.actionVisibility
 }) => {
   return {
     [actionOptions.name]: {
+      visibility: actionOptions.visibility,
       params: {
         id: { type: 'any' }
       },
       handler (context) {
-        return this.remove(context)
+        return this.remove(context);
       }
     }
-  }
-}
+  };
+};

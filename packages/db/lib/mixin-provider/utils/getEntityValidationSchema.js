@@ -1,46 +1,46 @@
-const { isObject } = require('@weave-js/utils')
-const { generateValidationSchemaItem } = require('./sanitizeValidationSchema')
+const { isObject } = require('@weave-js/utils');
+const { generateValidationSchemaItem } = require('./sanitizeValidationSchema');
 
 const getEntityValidationSchema = (entitySchemaFields, options = { isArray: false }) => {
-  const validationSchema = {}
+  const validationSchema = {};
 
   if (entitySchemaFields === null || Object.keys(entitySchemaFields).length === 0) {
-    return { type: 'any' }
+    return { type: 'any' };
   }
 
   if (entitySchemaFields) {
     Object.entries(entitySchemaFields).map(([fieldName, fieldSchema]) => {
       if (fieldSchema === false) {
-        return
+        return;
       }
 
-      const schema = generateValidationSchemaItem(fieldSchema, options)
+      const schema = generateValidationSchemaItem(fieldSchema, options);
       if (schema !== null) {
-        validationSchema[fieldName] = schema
+        validationSchema[fieldName] = schema;
       }
-    })
+    });
   }
 
-  let wrappedValidationSchema
+  let wrappedValidationSchema;
   if (validationSchema && isObject(validationSchema)) {
     if (options.isArray) {
       wrappedValidationSchema = {
         type: 'array', itemType: { type: 'object', props: validationSchema }
-      }
+      };
     } else {
       wrappedValidationSchema = {
         type: 'object', props: validationSchema
-      }
+      };
     }
   } else {
     if (options.isArray) {
-      wrappedValidationSchema = { type: 'array', itemType: { type: 'any' }}
+      wrappedValidationSchema = { type: 'array', itemType: { type: 'any' }};
     } else {
-      wrappedValidationSchema = { type: 'any' }
+      wrappedValidationSchema = { type: 'any' };
     }
   }
 
-  return wrappedValidationSchema
-}
+  return wrappedValidationSchema;
+};
 
-module.exports = { getEntityValidationSchema }
+module.exports = { getEntityValidationSchema };

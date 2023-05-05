@@ -1,36 +1,39 @@
-const { createBroker } = require('@weave-js/core')
-const { DbMixinProvider } = require('../../lib/index')
+const { createBroker } = require('@weave-js/core');
+const { createDbMixinProvider } = require('../../lib/index');
 
-const { mixin, action } = DbMixinProvider()
+const { mixin, action } = createDbMixinProvider({
+  entityName: 'actions_test'
+});
 
-require('../setup')('actions')
+require('../setup')('actions');
 
 describe('should build my service only with defined actions', () => {
   const broker = createBroker({
     logger: {
       enabled: false
     }
-  })
+  });
 
   broker.createService({
     name: 'test',
     mixins: mixin,
-    collectionName: 'actions_test',
     actions: {
+      // @ts-ignore
       ...action.count()
     }
-  })
+  });
 
-  beforeAll(() => broker.start())
+  beforeAll(() => broker.start());
 
-  afterAll(() => broker.stop())
+  afterAll(() => broker.stop());
 
-  it ('should only define count action', () => {
-    const actions = broker.registry.getActionList()
-    expect(actions[0].name).toBe('test.count')
+  it('should only define count action', () => {
+    const actions = broker.registry.actionCollection.list({});
+    expect(actions.length).toBe(1);
+    expect(actions[0].name).toBe('test.count');
 
-    broker.call('test.count').then(result => {
-      expect(result).toBe(0)
-    })
-  })
-})
+    return broker.call('test.count').then(result => {
+      expect(result).toBe(0);
+    });
+  });
+});

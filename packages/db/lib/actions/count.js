@@ -4,17 +4,17 @@ module.exports = () => {
       query: { type: 'any', optional: true }
     },
     handler (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context, context.data);
 
       if (data.limit) {
-        data.limit = null
+        data.limit = null;
       }
 
       if (data.offset) {
-        data.offset = null
+        data.offset = null;
       }
 
-      return this.adapter.count(data)
+      return this.adapter.count(data);
     }
-  }
-}
+  };
+};

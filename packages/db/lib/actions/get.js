@@ -1,4 +1,4 @@
-const { EntityNotFoundError } = require('../errors')
+const { DocumentNotFoundError } = require('../errors');
 
 /**
  * Get entity by id.
@@ -19,29 +19,29 @@ module.exports = () => {
       mapIds: { type: 'boolean', optional: true }
     },
     handler (context) {
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context, context.data);
 
       return this.getById(data.id)
         .then(entities => {
           if (!entities) {
-            return Promise.reject(new EntityNotFoundError(data.id))
+            return Promise.reject(new DocumentNotFoundError(data.id));
           }
 
-          return this.transformDocuments(context, data, entities)
+          return this.transformDocuments(context, data, entities);
         })
         .then(entities => {
           if (Array.isArray(entities) && data.mapIds) {
-            const result = {}
+            const result = {};
 
             entities.forEach(entity => {
-              result[entity[this.settings.idFieldName]] = entity
-            })
+              result[entity[this.settings.idFieldName]] = entity;
+            });
 
-            return result
+            return result;
           }
 
-          return entities
-        })
+          return entities;
+        });
     }
-  }
-}
+  };
+};

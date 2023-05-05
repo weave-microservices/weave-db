@@ -10,11 +10,11 @@ module.exports = () => {
     },
     handler (context) {
       // sanitize the given parameters
-      const data = this.sanitizeParams(context, context.data)
+      const data = this.sanitizeParams(context, context.data);
 
       // send params to the adapter
       return this.adapter.findOne(data.query)
-        .then(entity => this.transformDocuments(context, data, entity))
+        .then(entity => this.transformDocuments(context, data, entity));
     }
-  }
-}
+  };
+};

@@ -34,7 +34,7 @@
     ],
     "rootDir": "./lib",
     "roots": [
-      "../test"
+      "../test/integration-new"
     ]
   },
   "gitHead": "cdd9762d78d076dc7bdfa0784cdc9ce6af6a57c3"

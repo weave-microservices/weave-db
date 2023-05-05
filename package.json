@@ -24,12 +24,12 @@
   },
   "homepage": "https://github.com/fachw3rk/weave#readme",
   "devDependencies": {
-    "@types/jest": "27.0.3",
-    "@weave-js/core": "0.10.0",
+    "@types/jest": "27.4.1",
+    "@weave-js/core": "0.11.1",
     "lerna": "^4.0.0",
     "istanbul": "^0.4.5",
-    "jest": "^27.4.4",
-    "eslint": "^8.4.1",
+    "jest": "^27.5.1",
+    "eslint": "^8.11.0",
     "eslint-config-fw": "^1.0.3"
   }
 }

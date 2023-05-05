@@ -4,10 +4,10 @@ module.exports = () => {
       entity: { type: 'any' }
     },
     handler (context) {
-      const { entity } = context.data
+      const { entity } = context.data;
       return this.validateEntity(entity)
         .then(entity => this.adapter.insert(entity))
-        .then(data => this.entityChanged('Inserted', data, context).then(() => data))
+        .then(data => this.entityChanged('Inserted', data, context).then(() => data));
     }
-  }
-}
+  };
+};
