@@ -6,10 +6,21 @@
 const AdapterBase = require('../adapter-base');
 const NeDB = require('nedb');
 
-module.exports = (options) => {
+/**
+ * @typedef {object} InMemoryadapterOptions
+ * @property {string} [collectionName] - Name of the collection
+ * @property {string} [idFieldName] - Name of the id field
+ */
+
+/**
+ * Create In-Memory adapter instance
+ * @param {InMemoryadapterOptions} options - Adapter options
+ * @returns {any} - Adapter
+ */
+module.exports = (options = {}) => {
   return Object.assign(AdapterBase(), {
     init (broker, service) {
-      const collectionName = service.schema.collectionName ||
+      const collectionName = options.collectionName ||
         service.settings.collectionName ||
         service.schema.entityName ||
         service.settings.entityName;
@@ -17,6 +28,7 @@ module.exports = (options) => {
       if (!collectionName) {
         throw new Error('Collection name is missing!');
       }
+
       this.broker = broker;
       this.collectionName = collectionName;
       this.$idFieldName = service.schema.settings.idFieldName || '_id';

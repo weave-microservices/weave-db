@@ -1,8 +1,7 @@
-const { Weave, Errors } = require('@weave-js/core');
-const { DbService } = require('../../lib/index');
-const DbAdapter = require('../../lib/adapter');
-const { DocumentNotFoundError } = require('../../lib/errors');
-require('../setup')('crud');
+const { Weave } = require('@weave-js/core');
+const { DbMixin } = require('../../../lib/index');
+const DbAdapter = require('../../../lib/adapter');
+require('../../setup')('crud');
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -26,9 +25,9 @@ describe('db-service entity validation methods', () => {
 
   broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: DbMixin(),
     adapter: DbAdapter(),
-    collectionName: 'crud_test',
+    entityName: 'crud_test',
     entitySchema: {
       name: 'string'
     }
@@ -68,9 +67,9 @@ describe('db-service custom validation method', () => {
 
   const service = broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: DbMixin(),
     adapter: DbAdapter(),
-    collectionName: 'crud_test',
+    entityName: 'crud_test',
     methods: {
       entityValidator: jest.fn((entity) => {
         return true;

@@ -1,6 +1,6 @@
 {
   "name": "@weave-js/db",
-  "version": "0.9.0-beta.5",
+  "version": "0.10.0-beta.1",
   "description": "weave-db service",
   "main": "lib/index.js",
   "scripts": {
@@ -20,11 +20,11 @@
   },
   "license": "MIT",
   "peerDependencies": {
-    "@weave-js/core": ">=0.9.0"
+    "@weave-js/core": ">=0.15.4"
   },
   "dependencies": {
-    "@weave-js/core": "0.10.0",
-    "@weave-js/utils": "0.9.1",
+    "@weave-js/core": ">=0.15.4",
+    "@weave-js/utils": "0.13.0",
     "nedb": "^1.8.0"
   },
   "jest": {
@@ -34,7 +34,7 @@
     ],
     "rootDir": "./lib",
     "roots": [
-      "../test/integration-new"
+      "../test"
     ]
   },
   "gitHead": "cdd9762d78d076dc7bdfa0784cdc9ce6af6a57c3"

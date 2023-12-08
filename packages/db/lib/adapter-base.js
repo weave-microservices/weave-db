@@ -1,6 +1,11 @@
+/** @typedef {import('../index').BaseAdapter} BaseAdapter */
 
-module.exports = () => {
-  return {
+/**
+ * Base adapter
+ * @returns {BaseAdapter} - Base adapter
+*/
+module.exports = (/** options */) => {
+  return Object.assign({}, {
     getIdFieldName () {
       throw new Error('Method not implemented.');
     },
@@ -49,5 +54,5 @@ module.exports = () => {
     findAsStream (/* query, options */) {
       throw new Error('Method not implemented.');
     }
-  };
+  });
 };

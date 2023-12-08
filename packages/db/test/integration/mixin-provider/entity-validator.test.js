@@ -1,6 +1,6 @@
 const { Weave, Errors } = require('@weave-js/core');
-const { createDbMixinProvider } = require('../../lib/index');
-require('../setup')('crud');
+const { createDbMixinProvider, InMemoryAdapter } = require('../../../lib/index');
+require('../../setup')('crud');
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -17,8 +17,19 @@ const equalAtLeast = (obj, origin) => {
 
 describe('db-service entity validation (strict mode - remove)', () => {
   const { mixin } = createDbMixinProvider({
-    loadAllActions: true
+    loadAllActions: true,
+    adapter: InMemoryAdapter({ collectionName: 'validator_test' }),
+    entitySchema: {
+      id: { type: 'string', primaryKey: true, internalName: '_id' },
+      name: { type: 'string' },
+      content: { type: 'string' },
+      size: {
+        type: 'number'
+      }
+    }
   });
+
+  require('../../setup')('validator');
 
   const broker = Weave({
     nodeId: 'entity-validator',
@@ -29,18 +40,7 @@ describe('db-service entity validation (strict mode - remove)', () => {
 
   broker.createService({
     name: 'test',
-    mixins: mixin,
-    entitySchema: {
-      id: { type: 'string', primaryKey: true, internalName: '_id' },
-      name: { type: 'string' },
-      content: { type: 'string' },
-      size: {
-        type: 'number'
-      }
-    },
-    settings: {
-      collectionName: 'crud_test'
-    }
+    mixins: mixin
   });
 
   beforeAll(() => broker.start());
@@ -87,6 +87,7 @@ describe('db-service entity validation (strict mode - remove)', () => {
 
 describe('db-service entity validation (strict mode - error)', () => {
   const { mixin } = createDbMixinProvider({
+    adapter: InMemoryAdapter({ collectionName: 'validator_test' }),
     loadAllActions: true,
     entitySchema: {
       id: { type: 'string', primaryKey: true, internalName: '_id' },

@@ -4,7 +4,7 @@ const { generateValidationSchemaItem } = require('./sanitizeValidationSchema');
 const getEntityValidationSchema = (entitySchemaFields, options = { isArray: false }) => {
   const validationSchema = {};
 
-  if (entitySchemaFields === null || Object.keys(entitySchemaFields).length === 0) {
+  if (!entitySchemaFields || Object.keys(entitySchemaFields).length === 0) {
     return { type: 'any' };
   }
 

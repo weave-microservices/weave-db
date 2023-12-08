@@ -43,22 +43,6 @@ const { createHooks } = require('./hooks');
 */
 
 /**
- * @typedef {Object} DBMixinOptions Database Mixin options
- * @property {Adapter} [adapter] Database adapter.
- * @property {boolean} [loadAllActions] Should the mixin load all actions.
- * @property {string} [entityName] Should the mixin load all actions.
- * @property {('emit'|'broadcast')} [entityChangedEventType=emit] Event type of the entity changed events.
- * @property {string} [eventChangedName] Event changed name
- * @property {DBMixinValidatorOptions} [validatorOptions] Validator options
- * @property {string} [eventChangedName] Event changed name.
- * @property {boolean} [reconnectOnError=true] Try reconnect if the DB connection fails.
- * @property {number} [reconnectTimeout=2000] Reconnect timeout.
- * @property {boolean} [throwErrorIfNotFound=true] Throw an error if an document not exisis.
- * @property {Object<string, *>} [entitySchema] Entity schema
- * @property {'public'|'private'|'protected'=} actionVisibility Default visibility of actions.
-*/
-
-/**
  * @typedef {Object} DbServiceProvider Database Mixin options
  * @property {Object} mixin DB mixin
  * @property {DbActions} action Actions
@@ -66,15 +50,14 @@ const { createHooks } = require('./hooks');
 
 /**
  * Create a new DB mixin instance.
- * @param {DBMixinOptions=} mixinOptions DB mixin options
- * @returns {DbServiceProvider} Db Mixin
+ * @param {import('../../types/internal').DBMixinOptions} mixinOptions DB mixin options
+ * @returns {import('../../types/internal').DbServiceProvider} Db Mixin
 */
 function createDbMixinProvider (mixinOptions) {
   mixinOptions = defaultsDeep(mixinOptions, {
     loadAllActions: false,
     actionVisibility: 'protected',
     adapter: null,
-    entityName: null,
     entityChangedEventType: 'emit',
     entityChangedEventName: '$cache.',
     cache: {
@@ -86,7 +69,7 @@ function createDbMixinProvider (mixinOptions) {
       strict: true,
       strictMode: 'remove' // error
     },
-    entitySchema: null,
+    fields: null,
     reconnectOnError: true,
     reconnectTimeout: 2000,
     throwErrorIfNotFound: true
@@ -100,7 +83,6 @@ function createDbMixinProvider (mixinOptions) {
       lookups: null,
       fields: null
     },
-    entityName: mixinOptions.entityName,
     adapter: mixinOptions.adapter,
     entitySchema: mixinOptions.entitySchema,
     methods: {

@@ -1,7 +1,8 @@
 module.exports = {
   AdapterBase: require('./adapter-base'),
-  DbService: require('./service'),
+  InMemoryAdapter: require('./adapter/index'),
+  DbMixin: require('./mixin/mixin'),
   Errors: require('./errors'),
-  actions: require('./actions'),
+  actions: require('./mixin/actions'),
   ...require('./mixin-provider/createDbMixinProvider')
 };

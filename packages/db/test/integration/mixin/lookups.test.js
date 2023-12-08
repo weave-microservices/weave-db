@@ -1,6 +1,6 @@
 const { Weave } = require('@weave-js/core');
-const { DbService } = require('../../lib/index');
-require('../setup')('lookups');
+const { DbMixin } = require('../../../lib/index');
+require('../../setup')('lookups');
 
 const files = [
   { name: 'TestFile.mp3' },
@@ -35,8 +35,8 @@ describe('db-service lookup test', () => {
 
   broker.createService({
     name: 'file',
-    mixins: DbService(),
-    collectionName: 'lookups_files',
+    mixins: DbMixin(),
+    entityName: 'lookups_files',
     settings: {
       fields: ['_id', 'title', 'content', 'clicks', 'author'],
       lookups: {
@@ -47,8 +47,8 @@ describe('db-service lookup test', () => {
 
   broker.createService({
     name: 'thread',
-    mixins: DbService(),
-    collectionName: 'lookups_threads',
+    mixins: DbMixin(),
+    entityName: 'lookups_threads',
     settings: {
       fields: ['_id', 'title', 'content', 'clicks', 'author', 'attachments'],
       lookups: {
@@ -59,8 +59,8 @@ describe('db-service lookup test', () => {
 
   broker.createService({
     name: 'user',
-    mixins: DbService(),
-    collectionName: 'lookups_users',
+    mixins: DbMixin(),
+    entityName: 'lookups_users',
     settings: {
       fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
       lookups: {
@@ -146,8 +146,8 @@ describe('db-service nested lookup test', () => {
 
   broker.createService({
     name: 'file',
-    mixins: DbService(),
-    collectionName: 'lookups_files',
+    mixins: DbMixin(),
+    entityName: 'lookups_files',
     settings: {
       fields: ['_id', 'name']
     }
@@ -155,8 +155,8 @@ describe('db-service nested lookup test', () => {
 
   broker.createService({
     name: 'thread',
-    mixins: DbService(),
-    collectionName: 'lookups_threads',
+    mixins: DbMixin(),
+    entityName: 'lookups_threads',
     settings: {
       fields: ['_id', 'title', 'content', 'clicks', 'author', 'attachments'],
       lookups: {
@@ -168,8 +168,8 @@ describe('db-service nested lookup test', () => {
 
   broker.createService({
     name: 'user',
-    mixins: DbService(),
-    collectionName: 'lookups_users',
+    mixins: DbMixin(),
+    entityName: 'lookups_users',
     settings: {
       fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
       lookups: {

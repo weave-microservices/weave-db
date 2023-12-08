@@ -1,8 +1,9 @@
 const { Weave } = require('@weave-js/core');
-const { createDbMixinProvider } = require('../../lib/index');
-require('../setup')('lookups');
+const { createDbMixinProvider, InMemoryAdapter } = require('../../../lib/index');
+require('../../setup')('lookups');
 
 const { mixin } = createDbMixinProvider({
+  adapter: InMemoryAdapter(),
   loadAllActions: true
 });
 
@@ -42,7 +43,7 @@ describe('db-service lookup test', () => {
     name: 'file',
     mixins: mixin,
     settings: {
-      collectionName: 'lookups_files',
+      entityName: 'lookups_files',
       fields: ['_id', 'title', 'content', 'clicks', 'author'],
       lookups: {
         author: 'user.get'
@@ -53,8 +54,8 @@ describe('db-service lookup test', () => {
   broker.createService({
     name: 'thread',
     mixins: mixin,
-    collectionName: 'lookups_threads',
     settings: {
+      entityName: 'lookups_threads',
       fields: ['_id', 'title', 'content', 'clicks', 'author', 'attachments'],
       lookups: {
         author: 'user.get'
@@ -65,8 +66,8 @@ describe('db-service lookup test', () => {
   broker.createService({
     name: 'user',
     mixins: mixin,
-    collectionName: 'lookups_users',
     settings: {
+      entityName: 'lookups_users',
       fields: ['_id', 'username', 'firstname', 'lastname', 'threads'],
       lookups: {
         threads: function (context, docs, bla) {

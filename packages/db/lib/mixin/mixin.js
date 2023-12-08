@@ -8,7 +8,7 @@
 const { promisify, isFunction, isObject, dotGet, dotSet, flattenDeep } = require('@weave-js/utils');
 
 // own modules
-const NeDbAdapter = require('./adapter');
+const NeDbAdapter = require('../adapter');
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors');
 const { createActions } = require('./register-actions');
 

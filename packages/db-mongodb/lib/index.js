@@ -4,9 +4,32 @@
  * Copyright 2020 Fachwerk
  */
 
-const { AdapterBase } = require('@weave-js/db')
-const { MongoClient, ObjectId } = require('mongodb')
+const { AdapterBase } = require('@weave-js/db');
+const adapterBase = require('@weave-js/db/lib/adapter-base');
+const { MongoClient, ObjectId } = require('mongodb');
 
+/**
+ * @typedef {import('@weave-js/db').BaseAdapter} BaseAdapter
+ */
+
+/**
+ * @typedef {object} MongoDbAdapterOptions - Options for the MongoDB adapter
+ * @property {string} url - MongoDB connection url
+ * @property {string} [database] - MongoDB database name
+ * @property {boolean} [transform] - Whether to transform the data or not
+ * @property {import('mongodb').MongoClientOptions} [options] - Whether to use unified topology or not
+*/
+
+/**
+ * @typedef {BaseAdapter} Adapter - MongoDB adapter
+ * @property {MongoClient} client - MongoDB client
+*/
+
+/**
+ * Create a MongoDb adapter instance
+ * @param {MongoDbAdapterOptions} options - Options
+ * @returns {Adapter} - Adapter
+*/
 module.exports = (options) => {
   options = Object.assign({
     transform: true,
@@ -14,82 +37,94 @@ module.exports = (options) => {
       useUnifiedTopology: true
     },
     collectionName: undefined
-  }, options)
+  }, options);
 
-  return Object.assign(AdapterBase(), {
+  /** @type {} */
+  const baseAdapter = AdapterBase(options);
+
+  /** @typedef {Adapter} */
+  const adapter = {
     init (broker, service) {
-      const entityName = service.schema.collectionName
+      const entityName = service.schema.collectionName;
+
       if (!entityName) {
-        throw new Error('Collection name is missing!')
+        throw new Error('Collection name is missing!');
       }
 
-      this.$service = service
-      this.$collectionName = entityName
-      this.$entityName = entityName
-      this.$idField = service.schema.settings.idFieldName || '_id'
-      this.log = broker.createLogger('MONGODB ADAPTER')
+      this.$service = service;
+      this.$collectionName = entityName;
+      this.$entityName = entityName;
+      this.$idField = service.schema.settings.idFieldName || '_id';
+      this.log = broker.createLogger('MONGODB ADAPTER');
     },
     connect () {
       return MongoClient.connect(options.url, options.options).then(client => {
-        this.client = client
-        this.db = this.$service.db = client.db ? client.db(options.database) : client
-        this.collection = this.$service.db.collection(this.$collectionName)
-        this.log.debug('Database connection etablished')
+        this.client = client;
+        this.db = this.$service.db = client.db ? client.db(options.database) : client;
+        this.collection = this.$service.db.collection(this.$collectionName);
+        this.log.debug('Database connection established');
 
-        return { dbInstance: this.db }
-      })
+        return { dbInstance: this.db };
+      });
     },
     disconnect () {
       return new Promise((resolve, reject) => {
         this.client.close((error) => {
-          if (error) return reject(error)
-          return resolve()
-        })
-      })
+          if (error) {
+            return reject(error);
+          };
+          return resolve();
+        });
+      });
     },
     count (params) {
-      const query = params.query || {}
+      const query = params.query || {};
       if (query[this.$idField]) {
-        query[this.$idField] = this.stringToObjectId(query[this.$idField])
+        query[this.$idField] = this.stringToObjectId(query[this.$idField]);
       }
       return this.collection
         .find(query)
-        .count()
+        .count();
     },
     async insert (entity) {
-      const result = await this.collection.insertOne(entity)
+      const result = await this.collection.insertOne(entity);
       if (!result.acknowledged) {
-        throw new Error('MongoDb insert failed.')
+        throw new Error('MongoDb insert failed.');
       }
 
-      const copy = Object.assign({}, entity)
-      copy[this.$idField] = this.objectIdToString(result.insertedId)
-      return copy
+      const copy = Object.assign({}, entity);
+      copy[this.$idField] = this.objectIdToString(result.insertedId);
+      return copy;
     },
     async insertMany (entities, returnEntities = true) {
-      const result = await this.collection.insertMany(entities)
+      const result = await this.collection.insertMany(entities);
       if (!result.acknowledged) {
-        throw new Error('MongoDb insert failed.')
+        throw new Error('MongoDb insert failed.');
       }
 
       if (returnEntities) {
-        const results = [...entities]
+        const results = [...entities];
         return Object.values(result.insertedIds).map((id, index) => {
-          const entity = results[index]
-          entity[this.$idField] = this.objectIdToString(id)
-          return entity
-        })
+          const entity = results[index];
+          entity[this.$idField] = this.objectIdToString(id);
+          return entity;
+        });
       }
 
-      return entities.insertedIds.map(id => this.objectIdToString(id))
+      return entities.insertedIds.map(id => this.objectIdToString(id));
       // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
-    findOne (query) {
-      return this.collection.findOne(query)
+    findOne(rawQuery) {
+      const query = Object.assign({}, rawQuery);
+      if (query[this.$idField]) {
+        query[this.$idField] = this.stringToObjectId(query[this.$idField]);
+      }
+      console.log(query)
+      return this.collection.findOne(query);
     },
     findById (id) {
       return this.collection
-        .findOne({ [this.$idField]: this.stringToObjectId(id) })
+        .findOne({ [this.$idField]: this.stringToObjectId(id) });
     },
     findByIds (ids) {
       return this.collection
@@ -98,61 +133,61 @@ module.exports = (options) => {
             $in: ids.map(id => this.stringToObjectId(id))
           }
         })
-        .toArray()
+        .toArray();
     },
     find (params) {
       return new Promise((resolve, reject) => {
-        const buffer = []
-        const query = params.query || {}
+        const buffer = [];
+        const query = params.query || {};
 
         if (query[this.$idField]) {
-          query[this.$idField] = this.stringToObjectId(query[this.$idField])
+          query[this.$idField] = this.stringToObjectId(query[this.$idField]);
         }
 
         // Init cursor
-        let cursor = this.collection.find(query, params.projection)
+        let cursor = this.collection.find(query, params.projection);
 
         // handle projection
         if (params.projection) {
-          cursor = cursor.project(params.projection)
+          cursor = cursor.project(params.projection);
         }
 
         // handle limit
         if (params.limit) {
-          cursor = cursor.limit(Number(params.limit))
+          cursor = cursor.limit(Number(params.limit));
         }
 
         // handle offset
         if (params.offset) {
-          cursor = cursor.skip(params.offset)
+          cursor = cursor.skip(params.offset);
         }
 
         // Handle sort
         if (params.sort) {
-          cursor = cursor.sort(params.sort)
+          cursor = cursor.sort(params.sort);
         }
 
-        const stream = cursor.stream()
+        const stream = cursor.stream();
 
         if (params.asStream === true) {
-          resolve(stream)
+          resolve(stream);
         } else {
           stream.on('data', (data) => {
-            buffer.push(data)
-          })
+            buffer.push(data);
+          });
 
           stream.on('end', () => {
-            return resolve(buffer)
-          })
+            return resolve(buffer);
+          });
 
           stream.on('error', (error) => {
-            return reject(error)
-          })
+            return reject(error);
+          });
         }
-      })
+      });
     },
     findAsStream (query, options) {
-      return this.find({ asStream: true, query, ...options })
+      return this.find({ asStream: true, query, ...options });
     },
     updateById (id, entity) {
       return this.collection
@@ -161,37 +196,39 @@ module.exports = (options) => {
           entity,
           { returnOriginal: false }
         )
-        .then(result => result.value)
+        .then(result => result.value);
     },
     removeById (id) {
       return this.collection
         .findOneAndDelete({ [this.$idField]: this.stringToObjectId(id) })
-        .then(result => result.value)
+        .then(result => result.value);
     },
     async clear () {
-      const result = await this.collection.deleteMany({})
-        .then(result => result.deletedCount)
+      return await this.collection.deleteMany({})
+        .then(result => result.deletedCount);
     },
     entityToObject (entity) {
-      const data = Object.assign({}, entity)
+      const data = Object.assign({}, entity);
 
       if (data[this.$idField]) {
-        data[this.$idField] = this.objectIdToString(entity[this.$idField])
+        data[this.$idField] = this.objectIdToString(entity[this.$idField]);
       }
 
-      return data
+      return data;
     },
     objectIdToString (objectId) {
       if (objectId && objectId.toHexString) {
-        return objectId.toHexString()
+        return objectId.toHexString();
       }
-      return objectId
+      return objectId;
     },
     stringToObjectId (value) {
       if (typeof value === 'string' && ObjectId.isValid(value)) {
-        return new ObjectId(value)
+        return new ObjectId(value);
       }
-      return value
+      return value;
     }
-  })
-}
+  };
+
+  return Object.assign(baseAdapter, adapter);
+};

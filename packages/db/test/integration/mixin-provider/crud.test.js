@@ -1,7 +1,14 @@
 const { createBroker, Errors } = require('@weave-js/core');
-const { createDbMixinProvider } = require('../../lib/index');
-const { EntityNotFoundError } = require('../../lib/errors');
-require('../setup')('crud');
+const { createDbMixinProvider } = require('../../../lib/index');
+const { EntityNotFoundError } = require('../../../lib/errors');
+const { InMemoryAdapter } = require('../../../lib');
+
+const { mixin } = createDbMixinProvider({
+  loadAllActions: true,
+  adapter: InMemoryAdapter({ collectionName: 'crud_test' })
+});
+
+require('../../setup')('crud');
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -9,11 +16,6 @@ const docs = [
   { name: 'WeaveLogo.jpeg', content: null, size: 344 },
   { name: 'Blabla.pdf', content: 'Blabla', size: 566 }
 ];
-
-const { mixin } = createDbMixinProvider({
-  loadAllActions: true,
-  entityName: 'crud_test'
-});
 
 const equalAtLeast = (obj, origin) => {
   Object.keys(origin).map(key => {
@@ -32,9 +34,8 @@ describe('NEW db-service CRUD methods', () => {
 
   broker.createService({
     name: 'test',
-    mixins: mixin,
+    mixins: [mixin],
     settings: {
-      // fields: ['id', 'name']
     }
   });
 
@@ -75,7 +76,7 @@ describe('NEW db-service CRUD methods', () => {
     return broker.call('test.insert', {})
       .catch(error => {
         expect(error).toBeInstanceOf(Errors.WeaveParameterValidationError);
-        expect(error.code).toBe(422);
+        expect(error.code).toBe('WEAVE_PARAMETER_VALIDATION_ERROR');
       });
   });
 

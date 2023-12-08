@@ -36,9 +36,9 @@ const processEntitySchemaObject = (service, entitySchema) => {
 };
 
 const processEntitySchema = (service, mixinOptions) => {
-  if (mixinOptions.entitySchema) {
+  if (mixinOptions.fields) {
     service.log.debug('Process entity schema...');
-    service.$entity = processEntitySchemaObject(service, mixinOptions.entitySchema);
+    service.$entity = processEntitySchemaObject(service, mixinOptions.fields);
   }
 };
 

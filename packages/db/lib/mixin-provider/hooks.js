@@ -14,13 +14,13 @@ function createHooks (mixinOptions) {
       const self = this;
       processEntitySchema(self, mixinOptions);
 
-      if (this.schema.adapter) {
-        this.adapter = this.schema.adapter;
-      } else {
-        this.adapter = NeDbAdapter();
+      this.adapter = mixinOptions.adapter;
+
+      if (!this.adapter) {
+        throw new Error('No adapter defined!');
       }
 
-      this.adapter.init(this.runtime, this);
+      this.adapter.init(this.runtime.broker, this);
       this.log.info(`Weave Database module initialized for service "${this.name}"`);
 
       // Wrap up entity validation

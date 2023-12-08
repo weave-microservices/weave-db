@@ -1,8 +1,8 @@
 const { Weave, Errors } = require('@weave-js/core');
-const { DbService } = require('../../lib/index');
-const DbAdapter = require('../../lib/adapter');
-const { DocumentNotFoundError } = require('../../lib/errors');
-require('../setup')('hooks');
+const { DbMixin } = require('../../../lib/index');
+const DbAdapter = require('../../../lib/adapter');
+const { DocumentNotFoundError } = require('../../../lib/errors');
+require('../../setup')('hooks');
 
 const docs = [
   { name: 'Testfile.txt', content: 'Hello World', size: 2 },
@@ -27,9 +27,9 @@ describe('db-service CRUD methods', () => {
 
   broker.createService({
     name: 'test',
-    mixins: DbService(),
+    mixins: DbMixin(),
     adapter: DbAdapter(),
-    collectionName: 'hooks_test',
+    entityName: 'hooks_test',
     entityInserted (doc, a) {
       flow.push('inserted');
     },
@@ -90,7 +90,7 @@ describe('db-service CRUD methods', () => {
     broker.call('test.insert', {})
       .catch(error => {
         expect(error).toBeInstanceOf(Errors.WeaveParameterValidationError);
-        expect(error.code).toBe(422);
+        expect(error.code).toBe('WEAVE_PARAMETER_VALIDATION_ERROR');
         expect(flow.join(',')).toBe('');
         done();
       });

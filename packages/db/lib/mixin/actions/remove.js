@@ -1,4 +1,4 @@
-const { DocumentNotFoundError } = require('../errors');
+const { DocumentNotFoundError } = require('../../errors');
 
 module.exports = () => {
   return {
