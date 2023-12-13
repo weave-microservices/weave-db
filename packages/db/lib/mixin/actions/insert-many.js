@@ -5,10 +5,7 @@ module.exports = () => {
     },
     handler (context) {
       const { entities } = context.data;
-
-      return Promise.all(entities.map((entity) => this.validateEntity(entity)))
-        .then(res => this.adapter.insertMany(res))
-        .then(data => this.entityChanged('Inserted', data, context).then(() => data));
+      return this.insertMany(context, entities);
     }
   };
 };

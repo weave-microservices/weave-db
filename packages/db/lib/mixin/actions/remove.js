@@ -1,5 +1,3 @@
-const { DocumentNotFoundError } = require('../../errors');
-
 module.exports = () => {
   return {
     params: {
@@ -7,15 +5,7 @@ module.exports = () => {
     },
     handler (context) {
       const { id } = context.data;
-      return this.adapter.removeById(id)
-        .then(entity => {
-          if (!entity) {
-            return Promise.reject(new DocumentNotFoundError(id));
-          }
-
-          return this.transformDocuments(context, context.data, entity)
-            .then(data => this.entityChanged('Removed', data, context).then(() => data));
-        });
+      return this.remove(context, id);
     }
   };
 };

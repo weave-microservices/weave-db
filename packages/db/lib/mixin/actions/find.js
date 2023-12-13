@@ -1,7 +1,7 @@
 module.exports = () => {
   return {
     cache: {
-      keys: ['lookup', 'query']
+      keys: ['lookup', 'query', 'fields', 'limit', 'offset', 'sort']
     },
     params: {
       query: { type: 'any', optional: true },
@@ -13,9 +13,7 @@ module.exports = () => {
     },
     handler (context) {
       const data = this.sanitizeParams(context, context.data);
-
-      return this.adapter.find(data)
-        .then(entities => this.transformDocuments(context, data, entities));
+      return this.find(context, data);
     }
   };
 };

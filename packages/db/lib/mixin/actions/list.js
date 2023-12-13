@@ -17,7 +17,7 @@
 module.exports = () => {
   return {
     cache: {
-      keys: ['lookup', 'query', 'page', 'pageSize']
+      keys: ['lookup', 'query', 'page', 'pageSize', 'fields', 'sort']
     },
     params: {
       query: { type: 'any', optional: true },
@@ -29,28 +29,29 @@ module.exports = () => {
     },
     handler (context) {
       const data = this.sanitizeParams(context, context.data);
-      const countParams = Object.assign({}, data);
+      return this.list(context, data);
+      // const countParams = Object.assign({}, data);
 
-      // Remove params for count action
-      if (countParams.limit) {
-        countParams.limit = null;
-      }
+      // // Remove params for count action
+      // if (countParams.limit) {
+      //   countParams.limit = null;
+      // }
 
-      if (countParams.offset) {
-        countParams.offset = null;
-      }
+      // if (countParams.offset) {
+      //   countParams.offset = null;
+      // }
 
-      return Promise.all([this.adapter.find(data), this.adapter.count(countParams)])
-        .then(results => this.transformDocuments(context, data, results[0])
-          .then(entity => {
-            return {
-              rows: entity,
-              totalRows: results[1],
-              page: data.page,
-              pageSize: data.pageSize,
-              totalPages: Math.floor((results[1] + data.pageSize - 1) / data.pageSize)
-            };
-          }));
+      // return Promise.all([this.adapter.find(data), this.actions.count(countParams, { parentContext: context })])
+      //   .then(results => this.transformDocuments(context, data, results[0])
+      //     .then(entity => {
+      //       return {
+      //         rows: entity,
+      //         totalRows: results[1],
+      //         page: data.page,
+      //         pageSize: data.pageSize,
+      //         totalPages: Math.floor((results[1] + data.pageSize - 1) / data.pageSize)
+      //       };
+      //     }));
     }
   };
 };

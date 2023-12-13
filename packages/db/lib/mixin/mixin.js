@@ -11,8 +11,21 @@ const { promisify, isFunction, isObject, dotGet, dotSet, flattenDeep } = require
 const NeDbAdapter = require('../adapter');
 const { WeaveParameterValidationError } = require('@weave-js/core/lib/errors');
 const { createActions } = require('./register-actions');
+const { DocumentNotFoundError } = require('../errors');
 
-module.exports = (mixinOptions) => {
+/**
+ * @typedef {object} MixinOptions Mixin options
+ * @property {boolean} [enableTracing] - Enable tracing
+ */
+
+/**
+ * Create a database mixin instance
+ * @param {MixinOptions} mixinOptions Mixin options
+ * @returns {object} - Mixin
+ */
+module.exports = (mixinOptions = {
+  enableTracing: false
+}) => {
   return {
     settings: {
       idFieldName: '_id',
@@ -39,6 +52,107 @@ module.exports = (mixinOptions) => {
       },
       disconnect () {
         return this.adapter.disconnect();
+      },
+      count (context) {
+        const data = this.sanitizeParams(context, context.data);
+
+        if (data.limit) {
+          data.limit = null;
+        }
+
+        if (data.offset) {
+          data.offset = null;
+        }
+
+        return this.adapter.count(data);
+      },
+      async findOne (context, data) {
+        // send params to the adapter
+        const rawResult = await this.adapter.findOne(data.query);
+        return this.transformDocuments(context, data, rawResult);
+      },
+      findAsStream (context, query, filterOptions) {
+        return this.adapter.findAsStream(query, filterOptions);
+      },
+      async find (context, data) {
+        const rawResult = await this.adapter.find(data);
+        return this.transformDocuments(context, data, rawResult);
+      },
+      async get (context, data) {
+        const rawResult = await this.getById(data.id);
+        if (!rawResult) {
+          return Promise.reject(new DocumentNotFoundError(data.id));
+        }
+
+        const transformedDocuments = await this.transformDocuments(context, data, rawResult);
+        if (Array.isArray(transformedDocuments) && data.mapIds) {
+          const result = {};
+
+          transformedDocuments.forEach(entity => {
+            result[entity[this.settings.idFieldName]] = entity;
+          });
+
+          return result;
+        }
+        return transformedDocuments;
+      },
+      async insertMany (context, entities) {
+        const validatedEntities = await Promise.all(entities.map((entity) => this.validateEntity(entity)));
+        const insertResult = await this.adapter.insertMany(validatedEntities);
+        await this.entityChanged('Inserted', insertResult, context);
+        return insertResult;
+      },
+      async insert (context, entity) {
+        const validatedEntities = await this.validateEntity(entity);
+        const insertResult = await this.adapter.insert(validatedEntities);
+        await this.entityChanged('Inserted', insertResult, context);
+        return insertResult;
+      },
+      async list (context, data) {
+        const countParams = Object.assign({}, data);
+
+        // Remove params for count action
+        if (countParams.limit) {
+          countParams.limit = null;
+        }
+
+        if (countParams.offset) {
+          countParams.offset = null;
+        }
+
+        const [findResult, countResult] = await Promise.all([
+          this.adapter.find(data),
+          this.actions.count(countParams, { parentContext: context })
+        ]);
+
+        const transformedResults = await this.transformDocuments(context, data, findResult);
+
+        return {
+          rows: transformedResults,
+          totalRows: countResult,
+          page: data.page,
+          pageSize: data.pageSize,
+          totalPages: Math.floor((countResult + data.pageSize - 1) / data.pageSize)
+        };
+      },
+      async remove (context, id) {
+        const removeResult = await this.adapter.removeById(id);
+        if (!removeResult) {
+          return Promise.reject(new DocumentNotFoundError(id));
+        }
+        const transformedResults = await this.transformDocuments(context, { id }, removeResult);
+        await this.entityChanged('Removed', transformedResults, context);
+        return transformedResults;
+      },
+      async update (context, id, entity, options) {
+        const updateResult = await this.adapter.updateById(id, entity, options);
+        if (!updateResult) {
+          return Promise.reject(new DocumentNotFoundError(id));
+        }
+
+        const transformedResults = await this.transformDocuments(context, { id, entity, options }, updateResult);
+        await this.entityChanged('Updated', transformedResults, context);
+        return transformedResults;
       },
       sanitizeParams (context, data) {
         const sanitizedData = Object.assign({}, data);
@@ -241,6 +355,11 @@ module.exports = (mixinOptions) => {
         const entities = Array.isArray(entity) ? entity : [entity];
 
         return Promise.all(entities.map(e => this.entityValidator(e))).then(() => entity);
+      }
+    },
+    afterSchemasMerged (schema) {
+      if (schema.adapter && schema.adapter.decorateSchema) {
+        schema = schema.adapter.decorateSchema(schema);
       }
     },
     created () {
