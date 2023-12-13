@@ -31,7 +31,10 @@ describe('MongoDB adapter', () => {
 
   beforeAll(() => broker.start());
 
-  afterAll(() => broker.stop());
+  afterAll(async () => {
+    await broker.call('test.clear');
+    broker.stop();
+  });
 
   it('should connect to the database', async () => {
     const insertResult = await broker.call('test.insert', { entity: { name: 'Test' }});

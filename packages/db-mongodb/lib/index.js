@@ -33,9 +33,6 @@ const { MongoClient, ObjectId } = require('mongodb');
 module.exports = (options) => {
   options = Object.assign({
     transform: true,
-    options: {
-      useUnifiedTopology: true
-    },
     collectionName: undefined
   }, options);
 
@@ -44,6 +41,17 @@ module.exports = (options) => {
 
   /** @typedef {Adapter} */
   const adapter = {
+    decorateSchema (schema) {
+      schema.actions.aggregate = {
+        params: {
+          pipeline: { type: 'array' }
+        },
+        handler (context) {
+          return this.adapter.collection.aggregate(context.data.pipeline).toArray();
+        }
+      };
+      return schema;
+    },
     init (broker, service) {
       const entityName = service.schema.collectionName;
 
@@ -57,25 +65,25 @@ module.exports = (options) => {
       this.$idField = service.schema.settings.idFieldName || '_id';
       this.log = broker.createLogger('MONGODB ADAPTER');
     },
-    connect () {
-      return MongoClient.connect(options.url, options.options).then(client => {
-        this.client = client;
+    async connect () {
+      /** @type {MongoClient} */
+      try {
+        const client = await MongoClient.connect(options.url, options.options);
+        // this.client = new MongoClient(this.uri, this.opts);// await this.mongoClient.connect();
+        await client.connect();
+
         this.db = this.$service.db = client.db ? client.db(options.database) : client;
         this.collection = this.$service.db.collection(this.$collectionName);
+        this.client = client;
         this.log.debug('Database connection established');
-
         return { dbInstance: this.db };
-      });
+      } catch (error) {
+        this.log.error('Database connection failed', { error });
+        throw error;
+      }
     },
-    disconnect () {
-      return new Promise((resolve, reject) => {
-        this.client.close((error) => {
-          if (error) {
-            return reject(error);
-          };
-          return resolve();
-        });
-      });
+    async disconnect () {
+      return this.client.close();
     },
     count (params) {
       const query = params.query || {};
@@ -83,8 +91,7 @@ module.exports = (options) => {
         query[this.$idField] = this.stringToObjectId(query[this.$idField]);
       }
       return this.collection
-        .find(query)
-        .count();
+        .countDocuments(query);
     },
     async insert (entity) {
       const result = await this.collection.insertOne(entity);
@@ -112,14 +119,12 @@ module.exports = (options) => {
       }
 
       return entities.insertedIds.map(id => this.objectIdToString(id));
-      // .then(result => result.insertedCount > 0 ? result.ops[0] : null)
     },
-    findOne(rawQuery) {
+    findOne (rawQuery) {
       const query = Object.assign({}, rawQuery);
       if (query[this.$idField]) {
         query[this.$idField] = this.stringToObjectId(query[this.$idField]);
       }
-      console.log(query)
       return this.collection.findOne(query);
     },
     findById (id) {
@@ -194,14 +199,12 @@ module.exports = (options) => {
         .findOneAndUpdate(
           { [this.$idField]: this.stringToObjectId(id) },
           entity,
-          { returnOriginal: false }
-        )
-        .then(result => result.value);
+          { returnDocument: 'after' }
+        );
     },
     removeById (id) {
       return this.collection
-        .findOneAndDelete({ [this.$idField]: this.stringToObjectId(id) })
-        .then(result => result.value);
+        .findOneAndDelete({ [this.$idField]: this.stringToObjectId(id) });
     },
     async clear () {
       return await this.collection.deleteMany({})
