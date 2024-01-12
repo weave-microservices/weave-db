@@ -9,7 +9,8 @@ module.exports = () => {
       lookup: { type: 'array', itemType: { type: 'string' }, optional: true },
       fields: { type: 'array', itemType: { type: 'string' }, optional: true },
       limit: { type: 'number', optional: true, convert: true },
-      offset: { type: 'number', optional: true, convert: true }
+      offset: { type: 'number', optional: true, convert: true },
+      options: { type: 'object', optional: true }
     },
     handler (context) {
       const data = this.sanitizeParams(context, context.data);

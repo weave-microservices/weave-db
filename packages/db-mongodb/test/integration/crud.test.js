@@ -19,13 +19,18 @@ describe('MongoDB adapter', () => {
     name: 'test',
     mixins: DbMixin(),
     adapter: MongoDbAdapter({
-      url: connectionString
+      url: connectionString,
+      autoHint: true
     }),
     collectionName: 'crud_test',
     actions: {
       clear () {
         return this.adapter.clear({});
       }
+    },
+    async started () {
+      await this.adapter.collection.createIndex({ name: 1, age: 1 });
+      await this.adapter.collection.createIndex({ name: 1 });
     }
   });
 
@@ -39,12 +44,14 @@ describe('MongoDB adapter', () => {
   it('should connect to the database', async () => {
     const insertResult = await broker.call('test.insert', { entity: { name: 'Test' }});
     idIsString(insertResult);
-    const findResult = await broker.call('test.find');
+    const findResult = await broker.call('test.find', { options: { hint: { name: 1 }}});
     expect(findResult.length).toBe(1);
     findResult.forEach(idIsString);
     const findOneResult = await broker.call('test.findOne', { query: { _id: insertResult._id }});
     idIsString(findOneResult);
-    const countResult = await broker.call('test.count');
+    const countResult = await broker.call('test.count', {
+      query: { name: 'Test' }
+    });
     expect(countResult).toBe(1);
     console.log(insertResult);
     return await broker.call('test.clear');

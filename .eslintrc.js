@@ -1,5 +1,8 @@
 module.exports = {
   root: true,
+  'plugins': [
+    'jsdoc'
+  ],
   extends: [
     'eslint-config-fw'
   ],

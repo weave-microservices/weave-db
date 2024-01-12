@@ -16,6 +16,8 @@ const { MongoClient, ObjectId } = require('mongodb');
  * @typedef {object} MongoDbAdapterOptions - Options for the MongoDB adapter
  * @property {string} url - MongoDB connection url
  * @property {string} [database] - MongoDB database name
+ * @property {boolean} [autoHint] - Try to automatically find a index hint for queries
+ * @property {string} [defaultHint] - Default index hint
  * @property {boolean} [transform] - Whether to transform the data or not
  * @property {import('mongodb').MongoClientOptions} [options] - Whether to use unified topology or not
 */
@@ -33,10 +35,11 @@ const { MongoClient, ObjectId } = require('mongodb');
 module.exports = (options) => {
   options = Object.assign({
     transform: true,
-    collectionName: undefined
+    collectionName: undefined,
+    autoHint: false,
+    defaultHint: '_id_'
   }, options);
 
-  /** @type {} */
   const baseAdapter = AdapterBase(options);
 
   /** @typedef {Adapter} */
@@ -44,10 +47,15 @@ module.exports = (options) => {
     decorateSchema (schema) {
       schema.actions.aggregate = {
         params: {
-          pipeline: { type: 'array' }
+          pipeline: { type: 'array' },
+          options: { type: 'object', optional: true }
         },
         handler (context) {
-          return this.adapter.collection.aggregate(context.data.pipeline).toArray();
+          const aggregateOptions = context.data.options || {};
+
+          return this.adapter.collection
+            .aggregate(context.data.pipeline, options)
+            .toArray();
         }
       };
       return schema;
@@ -76,6 +84,14 @@ module.exports = (options) => {
         this.collection = this.$service.db.collection(this.$collectionName);
         this.client = client;
         this.log.debug('Database connection established');
+
+        try {
+          this.indexes = await this.collection.listIndexes().toArray();
+          this.log.debug('');
+        } catch (indexFetchError) {
+          this.log.error('Failed to fetch indexes', { indexFetchError });
+        }
+
         return { dbInstance: this.db };
       } catch (error) {
         this.log.error('Database connection failed', { error });
@@ -87,11 +103,18 @@ module.exports = (options) => {
     },
     count (params) {
       const query = params.query || {};
+      const countOptions = params.options || {};
+
       if (query[this.$idField]) {
         query[this.$idField] = this.stringToObjectId(query[this.$idField]);
       }
+
+      if (options.autoHint && !countOptions.hint) {
+        countOptions.hint = this.tryGetHint(query);
+      }
+
       return this.collection
-        .countDocuments(query);
+        .countDocuments(query, countOptions);
     },
     async insert (entity) {
       const result = await this.collection.insertOne(entity);
@@ -144,6 +167,7 @@ module.exports = (options) => {
       return new Promise((resolve, reject) => {
         const buffer = [];
         const query = params.query || {};
+        const queryOptions = params.options || {};
 
         if (query[this.$idField]) {
           query[this.$idField] = this.stringToObjectId(query[this.$idField]);
@@ -152,10 +176,10 @@ module.exports = (options) => {
         // Init cursor
         let cursor = this.collection.find(query, params.projection);
 
-        // handle projection
-        if (params.projection) {
-          cursor = cursor.project(params.projection);
-        }
+        // // handle projection
+        // if (params.projection) {
+        //   cursor = cursor.project(params.projection);
+        // }
 
         // handle limit
         if (params.limit) {
@@ -170,6 +194,14 @@ module.exports = (options) => {
         // Handle sort
         if (params.sort) {
           cursor = cursor.sort(params.sort);
+        }
+
+        if (options.autoHint && !queryOptions.hint) {
+          queryOptions.hint = this.tryGetHint(query);
+        }
+
+        if (queryOptions.hint) {
+          cursor = cursor.hint(queryOptions.hint);
         }
 
         const stream = cursor.stream();
@@ -191,8 +223,8 @@ module.exports = (options) => {
         }
       });
     },
-    findAsStream (query, options) {
-      return this.find({ asStream: true, query, ...options });
+    findAsStream (params) {
+      return this.find({ asStream: true, ...params });
     },
     updateById (id, entity) {
       return this.collection
@@ -225,11 +257,41 @@ module.exports = (options) => {
       }
       return objectId;
     },
-    stringToObjectId (value) {
-      if (typeof value === 'string' && ObjectId.isValid(value)) {
-        return new ObjectId(value);
+    /**
+     * Convert a string to an ObjectId
+     * @param {string} objectIdString ObjectId String
+     * @returns {import('mongodb').ObjectId | string} ObjectId
+     */
+    stringToObjectId (objectIdString) {
+      if (typeof objectIdString === 'string' && ObjectId.isValid(objectIdString)) {
+        return new ObjectId(objectIdString);
       }
-      return value;
+      return objectIdString;
+    },
+    /**
+     * Try to get the index hint from the query params
+     * @param {Object} query Query
+     * @param {Object} options Options
+     * @returns {string} Index hint
+     */
+    tryGetHint (query) {
+      const isQueryEmpty = Object.keys(query).length === 0;
+
+      /** @type {string} */
+      let hint = options.defaultHint;
+
+      if (!isQueryEmpty) {
+        const index = this.indexes.find((index) => {
+          const indexKeys = Object.keys(index.key);
+          return indexKeys.every((key) => query[key]);
+        });
+
+        if (index) {
+          hint = index.name;
+        }
+      }
+
+      return hint;
     }
   };
 

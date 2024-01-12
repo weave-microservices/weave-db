@@ -30,10 +30,7 @@ describe('db-service CRUD methods', () => {
     adapter: DbAdapter({
       collectionName: 'crud_test'
     }),
-    entityName: 'crud_test',
-    settings: {
-      // fields: ['id', 'name']
-    }
+    entityName: 'crud_test'
   });
 
   beforeAll(() => broker.start());

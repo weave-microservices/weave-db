@@ -6,7 +6,8 @@ module.exports = () => {
     params: {
       query: { type: 'any', optional: true },
       lookup: { type: 'array', itemType: { type: 'string' }, optional: true },
-      fields: { type: 'array', itemType: { type: 'string' }, optional: true }
+      fields: { type: 'array', itemType: { type: 'string' }, optional: true },
+      options: { type: 'object', optional: true }
     },
     handler (context) {
       // sanitize the given parameters
