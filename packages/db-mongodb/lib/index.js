@@ -8,6 +8,31 @@ const { AdapterBase } = require('@weave-js/db');
 const adapterBase = require('@weave-js/db/lib/adapter-base');
 const { MongoClient, ObjectId } = require('mongodb');
 
+function extractUniquePropertyNames (query) {
+  if (typeof query !== 'object' || query === null) {
+    return [];
+  }
+
+  const uniquePropertyNames = new Set();
+
+  function traverse (obj) {
+    for (const key in obj) {
+      if (!key.startsWith('$')) {
+        uniquePropertyNames.add(key);
+      }
+      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+        traverse(obj[key]);
+      } else if (Array.isArray(obj[key])) {
+        obj[key].forEach(traverse);
+      }
+    }
+  }
+
+  traverse(query);
+
+  return Array.from(uniquePropertyNames);
+}
+
 /**
  * @typedef {import('@weave-js/db').BaseAdapter} BaseAdapter
  */
@@ -86,8 +111,13 @@ module.exports = (options) => {
         this.log.debug('Database connection established');
 
         try {
-          this.indexes = await this.collection.listIndexes().toArray();
-          this.log.debug('');
+          const rawIndexes = await this.collection.indexes();
+
+          this.indexes = rawIndexes.sort((a, b) => {
+            return Object.keys(b.key).length - Object.keys(a.key).length;
+          });
+
+          this.log.debug(`Found ${this.indexes.length} indexes for collection ${this.$collectionName}`);
         } catch (indexFetchError) {
           this.log.error('Failed to fetch indexes', { indexFetchError });
         }
@@ -282,8 +312,9 @@ module.exports = (options) => {
 
       if (!isQueryEmpty) {
         const index = this.indexes.find((index) => {
+          const queryKeys = extractUniquePropertyNames(query);
           const indexKeys = Object.keys(index.key);
-          return indexKeys.every((key) => query[key]);
+          return indexKeys.every((key) => queryKeys.includes(key));
         });
 
         if (index) {
